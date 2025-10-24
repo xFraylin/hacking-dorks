@@ -530,9 +530,7 @@ export function GoogleDorksGenerator() {
                 <h3 className="text-lg font-bold text-red-400">Important Disclaimer</h3>
               </div>
               <p className="text-red-300 text-sm leading-relaxed">
-                ⚠️ <strong>For educational and authorized security research only.</strong> The developer is not responsible for misuse. 
-                This tool is intended for legitimate security testing, penetration testing, and authorized vulnerability assessments only. 
-                Users are responsible for ensuring they have proper authorization before conducting any security research activities.
+                ⚠️ <strong>For educational and authorized security research only.</strong>
               </p>
             </div>
           </div>
