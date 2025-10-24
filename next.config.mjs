@@ -9,8 +9,8 @@ const nextConfig = {
   devIndicators: false,
   output: 'export',
   trailingSlash: true,
-  basePath: process.env.NODE_ENV === 'production' ? '/xfraylin-dorks-explorer' : '',
-  assetPrefix: process.env.NODE_ENV === 'production' ? '/xfraylin-dorks-explorer/' : '',
+  basePath: process.env.NODE_ENV === 'production' ? '/hacking-dorks' : '',
+  assetPrefix: process.env.NODE_ENV === 'production' ? '/hacking-dorks/' : '',
 }
 
 export default nextConfig

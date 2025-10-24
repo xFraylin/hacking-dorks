@@ -2,7 +2,7 @@
   "name": "google-dorks-tool",
   "version": "1.0.0",
   "private": true,
-  "homepage": "https://xfraylin.github.io/google-dorks-tool",
+  "homepage": "https://xfraylin.github.io/hacking-dorks",
   "scripts": {
     "build": "next build",
     "dev": "next dev",
