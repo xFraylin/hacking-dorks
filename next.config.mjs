@@ -1,0 +1,16 @@
+/** @type {import('next').NextConfig} */
+const nextConfig = {
+  typescript: {
+    ignoreBuildErrors: true,
+  },
+  images: {
+    unoptimized: true,
+  },
+  devIndicators: false,
+  output: 'export',
+  trailingSlash: true,
+  basePath: process.env.NODE_ENV === 'production' ? '/google-dorks-tool' : '',
+  assetPrefix: process.env.NODE_ENV === 'production' ? '/google-dorks-tool/' : '',
+}
+
+export default nextConfig
