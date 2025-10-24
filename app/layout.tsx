@@ -7,8 +7,8 @@ const _geist = Geist({ subsets: ["latin"] })
 const _geistMono = Geist_Mono({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
-  title: "Google Dorks for Bug Bounty",
-  description: "Generate Google Dork queries for bug bounty hunting",
+  title: "Hacking Dorks",
+  description: "Advanced Google Dorks Explorer for Security Research",
   generator: "v0.app",
 }
 
