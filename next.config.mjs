@@ -9,8 +9,8 @@ const nextConfig = {
   devIndicators: false,
   output: 'export',
   trailingSlash: true,
-  basePath: process.env.NODE_ENV === 'production' ? '/google-dorks-tool' : '',
-  assetPrefix: process.env.NODE_ENV === 'production' ? '/google-dorks-tool/' : '',
+  basePath: process.env.NODE_ENV === 'production' ? '/xfraylin-dorks-explorer' : '',
+  assetPrefix: process.env.NODE_ENV === 'production' ? '/xfraylin-dorks-explorer/' : '',
 }
 
 export default nextConfig
