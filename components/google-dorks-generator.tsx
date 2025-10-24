@@ -344,6 +344,17 @@ export function GoogleDorksGenerator() {
     })
   }
 
+  const openAllDorks = () => {
+    // Open all dorks from all categories
+    dorkCategories.forEach((category) => {
+      category.dorks.forEach((dork) => {
+        const processedDork = replaceDomain(dork, domain)
+        const url = generateGoogleSearchUrl(processedDork)
+        window.open(url, "_blank")
+      })
+    })
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
       {/* Animated background elements */}
@@ -387,6 +398,15 @@ export function GoogleDorksGenerator() {
                 <Github className="h-4 w-4" />
                 <span className="font-semibold text-white">xFraylin</span>
               </a>
+              <a 
+                href="https://linkedin.com/in/xfraylin" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="flex items-center gap-2 px-4 py-2 bg-white/10 hover:bg-white/20 border border-white/20 rounded-lg transition-all hover:scale-105"
+              >
+                <Linkedin className="h-4 w-4" />
+                <span className="font-semibold text-white">xFraylin</span>
+              </a>
             </div>
             <div className="w-px h-6 bg-gray-600"></div>
             <div className="flex items-center gap-3 text-gray-400">
@@ -415,6 +435,14 @@ export function GoogleDorksGenerator() {
                   onChange={(e) => setDomain(e.target.value)}
                   className="w-full pl-14 pr-6 py-6 text-lg bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl text-white placeholder-gray-400 focus:border-cyan-400 focus:ring-2 focus:ring-cyan-400/20 transition-all shadow-2xl"
                 />
+                {/* Open All Dorks Button */}
+                <Button
+                  onClick={openAllDorks}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 bg-gradient-to-r from-purple-500 to-cyan-500 hover:from-purple-600 hover:to-cyan-600 text-white font-semibold px-4 py-2 rounded-lg shadow-lg hover:shadow-xl transition-all hover:scale-105"
+                >
+                  <Zap className="h-4 w-4 mr-2" />
+                  Open All Dorks
+                </Button>
               </div>
             </div>
             <p className="text-gray-400 mt-4 text-sm">
@@ -449,18 +477,6 @@ export function GoogleDorksGenerator() {
               </CardHeader>
               
               <CardContent className="space-y-3">
-                {category.dorks.length > 1 && !category.dorks.some(dork => dork.includes(' | ')) ? (
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => openAllQueries(category.dorks)}
-                    className="w-full bg-white/10 hover:bg-white/20 border-white/20 text-white hover:text-white transition-all"
-                  >
-                    <ExternalLink className="h-4 w-4 mr-2" />
-                    Open All Queries
-                  </Button>
-                ) : null}
-
                 <div className="space-y-2">
                   {category.dorks.map((dork, dorkIndex) => {
                     const processedDork = replaceDomain(dork, domain)
