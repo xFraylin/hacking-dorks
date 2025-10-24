@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Copy, Check, ExternalLink, Search, Sparkles, Shield, Zap, Target, Eye, Lock, AlertTriangle, Database, Code, FileText, Globe, Github, Linkedin } from "lucide-react"
+import { Copy, Check, ExternalLink, Search, Sparkles, Shield, Zap, Target, Eye, Lock, AlertTriangle, Database, Code, FileText, Globe, Github, Linkedin, Users, Mail, Briefcase, Newspaper, DollarSign, Handshake, MapPin } from "lucide-react"
 
 interface DorkCategory {
   title: string
@@ -296,9 +296,143 @@ const dorkCategories: DorkCategory[] = [
   },
 ]
 
+const osintCategories: DorkCategory[] = [
+  {
+    title: "Social Media Discovery",
+    dorks: [
+      'site:twitter.com "{domain}"',
+      'site:linkedin.com "{domain}"',
+      'site:instagram.com "{domain}"',
+      'site:facebook.com "{domain}"',
+      'site:tiktok.com "{domain}"',
+    ],
+    icon: <Users className="h-4 w-4" />,
+    description: "Find social media profiles and posts",
+    color: "bg-blue-500/10 text-blue-600 border-blue-500/20"
+  },
+  {
+    title: "Email Discovery",
+    dorks: [
+      'site:{domain} "@{domain}"',
+      'site:{domain} "contact@"',
+      'site:{domain} "info@"',
+      'site:{domain} "admin@"',
+      'site:{domain} "support@"',
+    ],
+    icon: <Mail className="h-4 w-4" />,
+    description: "Discover email addresses and contact information",
+    color: "bg-green-500/10 text-green-600 border-green-500/20"
+  },
+  {
+    title: "Document Discovery",
+    dorks: [
+      'site:{domain} filetype:pdf',
+      'site:{domain} filetype:doc',
+      'site:{domain} filetype:xls',
+      'site:{domain} filetype:ppt',
+      'site:{domain} filetype:txt',
+    ],
+    icon: <FileText className="h-4 w-4" />,
+    description: "Find documents and files",
+    color: "bg-purple-500/10 text-purple-600 border-purple-500/20"
+  },
+  {
+    title: "Employee Information",
+    dorks: [
+      'site:{domain} "employee"',
+      'site:{domain} "staff"',
+      'site:{domain} "team"',
+      'site:{domain} "about us"',
+      'site:{domain} "management"',
+    ],
+    icon: <Users className="h-4 w-4" />,
+    description: "Find employee and team information",
+    color: "bg-orange-500/10 text-orange-600 border-orange-500/20"
+  },
+  {
+    title: "Technology Stack",
+    dorks: [
+      'site:{domain} "powered by"',
+      'site:{domain} "built with"',
+      'site:{domain} "technology"',
+      'site:{domain} "framework"',
+      'site:{domain} "cms"',
+    ],
+    icon: <Code className="h-4 w-4" />,
+    description: "Discover technology and frameworks used",
+    color: "bg-cyan-500/10 text-cyan-600 border-cyan-500/20"
+  },
+  {
+    title: "Job Postings",
+    dorks: [
+      'site:{domain} "jobs"',
+      'site:{domain} "careers"',
+      'site:{domain} "hiring"',
+      'site:{domain} "employment"',
+      'site:{domain} "positions"',
+    ],
+    icon: <Briefcase className="h-4 w-4" />,
+    description: "Find job postings and career information",
+    color: "bg-indigo-500/10 text-indigo-600 border-indigo-500/20"
+  },
+  {
+    title: "News & Press",
+    dorks: [
+      'site:{domain} "news"',
+      'site:{domain} "press"',
+      'site:{domain} "announcement"',
+      'site:{domain} "update"',
+      'site:{domain} "blog"',
+    ],
+    icon: <Newspaper className="h-4 w-4" />,
+    description: "Find news articles and press releases",
+    color: "bg-red-500/10 text-red-600 border-red-500/20"
+  },
+  {
+    title: "Financial Information",
+    dorks: [
+      'site:{domain} "financial"',
+      'site:{domain} "revenue"',
+      'site:{domain} "funding"',
+      'site:{domain} "investment"',
+      'site:{domain} "budget"',
+    ],
+    icon: <DollarSign className="h-4 w-4" />,
+    description: "Find financial and business information",
+    color: "bg-emerald-500/10 text-emerald-600 border-emerald-500/20"
+  },
+  {
+    title: "Partnerships",
+    dorks: [
+      'site:{domain} "partnership"',
+      'site:{domain} "collaboration"',
+      'site:{domain} "alliance"',
+      'site:{domain} "client"',
+      'site:{domain} "customer"',
+    ],
+    icon: <Handshake className="h-4 w-4" />,
+    description: "Find business partnerships and collaborations",
+    color: "bg-teal-500/10 text-teal-600 border-teal-500/20"
+  },
+  {
+    title: "Location Information",
+    dorks: [
+      'site:{domain} "address"',
+      'site:{domain} "location"',
+      'site:{domain} "office"',
+      'site:{domain} "headquarters"',
+      'site:{domain} "contact"',
+    ],
+    icon: <MapPin className="h-4 w-4" />,
+    description: "Find physical locations and addresses",
+    color: "bg-pink-500/10 text-pink-600 border-pink-500/20"
+  },
+]
+
 export function GoogleDorksGenerator() {
   const [domain, setDomain] = useState("")
   const [copiedIndex, setCopiedIndex] = useState<string | null>(null)
+  const [activeSection, setActiveSection] = useState<'security' | 'osint'>('security')
 
   const replaceDomain = (dork: string, inputDomain: string) => {
     if (!inputDomain) return dork
@@ -345,8 +479,9 @@ export function GoogleDorksGenerator() {
   }
 
   const openAllDorks = () => {
-    // Open all dorks from all categories
-    dorkCategories.forEach((category) => {
+    // Open all dorks from current active section
+    const currentCategories = activeSection === 'security' ? dorkCategories : osintCategories
+    currentCategories.forEach((category) => {
       category.dorks.forEach((dork) => {
         const processedDork = replaceDomain(dork, domain)
         const url = generateGoogleSearchUrl(processedDork)
@@ -367,10 +502,32 @@ export function GoogleDorksGenerator() {
       <div className="relative z-10 max-w-7xl mx-auto px-4 py-16">
         {/* Hero Section */}
         <div className="text-center mb-20">
-          <div className="inline-flex items-center gap-3 px-6 py-3 bg-white/10 backdrop-blur-md border border-white/20 rounded-full mb-8 shadow-lg">
-            <Sparkles className="h-5 w-5 text-cyan-400 animate-spin" />
-            <span className="text-sm font-semibold text-white">Advanced Security Research Tool</span>
-            <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
+          <div className="flex items-center justify-center gap-4 mb-8 flex-wrap">
+            <div 
+              className={`inline-flex items-center gap-3 px-6 py-3 backdrop-blur-md border rounded-full shadow-lg transition-all cursor-pointer ${
+                activeSection === 'security' 
+                  ? 'bg-white/10 border-white/20' 
+                  : 'bg-white/5 border-white/10 hover:bg-white/10'
+              }`}
+              onClick={() => setActiveSection('security')}
+            >
+              <Sparkles className="h-5 w-5 text-cyan-400 animate-spin" />
+              <span className="text-sm font-semibold text-white">Advanced Security Research Tool</span>
+              <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
+            </div>
+            
+            <div 
+              className={`inline-flex items-center gap-3 px-6 py-3 backdrop-blur-md border rounded-full shadow-lg transition-all cursor-pointer ${
+                activeSection === 'osint' 
+                  ? 'bg-white/10 border-white/20' 
+                  : 'bg-white/5 border-white/10 hover:bg-white/10'
+              }`}
+              onClick={() => setActiveSection('osint')}
+            >
+              <Search className="h-5 w-5 text-purple-400" />
+              <span className="text-sm font-semibold text-white">OSINT Research Tool</span>
+              <div className="w-2 h-2 bg-purple-400 rounded-full animate-pulse"></div>
+            </div>
           </div>
 
           <h1 className="text-6xl md:text-8xl font-black bg-gradient-to-r from-cyan-400 via-purple-400 to-pink-400 bg-clip-text text-transparent mb-6 leading-tight">
@@ -453,7 +610,7 @@ export function GoogleDorksGenerator() {
 
         {/* Categories Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {dorkCategories.map((category, categoryIndex) => (
+          {(activeSection === 'security' ? dorkCategories : osintCategories).map((category, categoryIndex) => (
             <Card 
               key={categoryIndex}
               className="group bg-white/5 backdrop-blur-md border border-white/10 hover:border-white/20 transition-all duration-300 hover:scale-105 hover:shadow-2xl hover:shadow-purple-500/10"
