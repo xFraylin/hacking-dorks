@@ -5,7 +5,8 @@ import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Copy, Check, ExternalLink, Search, Sparkles, Shield, Zap, Target, Eye, Lock, AlertTriangle, Database, Code, FileText, Globe, Github, Linkedin } from "lucide-react"
+import { Copy, Check, ExternalLink, Search, Sparkles, Shield, Zap, Target, Eye, Lock, AlertTriangle, Database, Code, FileText, Globe, Github, Linkedin, Video } from "lucide-react"
+import { sqlInjectionDorks, cctvDorks, lfiDorks, sensitiveDataDorks } from "@/components/dork-data/wordlist-categories"
 
 interface DorkCategory {
   title: string
@@ -294,6 +295,34 @@ const dorkCategories: DorkCategory[] = [
     description: "GitHub repository leaks",
     color: "bg-gray-500/10 text-gray-600 border-gray-500/20"
   },
+  {
+    title: "SQL Injection",
+    dorks: sqlInjectionDorks,
+    icon: <Database className="h-4 w-4" />,
+    description: "Google dorks for SQL injection and vulnerable parameters",
+    color: "bg-pink-500/10 text-pink-600 border-pink-500/20"
+  },
+  {
+    title: "CCTV / Cámaras abiertas",
+    dorks: cctvDorks,
+    icon: <Video className="h-4 w-4" />,
+    description: "Cámaras IP y streams accesibles (AXIS, ViewerFrame, etc.)",
+    color: "bg-cyan-500/10 text-cyan-600 border-cyan-500/20"
+  },
+  {
+    title: "Local File Inclusion",
+    dorks: lfiDorks,
+    icon: <FileText className="h-4 w-4" />,
+    description: "Parámetros típicos de LFI (page=, file=, include=, etc.)",
+    color: "bg-teal-500/10 text-teal-600 border-teal-500/20"
+  },
+  {
+    title: "Sensitive Data",
+    dorks: sensitiveDataDorks,
+    icon: <Lock className="h-4 w-4" />,
+    description: "Datos sensibles, backups, passwords y configs expuestos",
+    color: "bg-rose-500/10 text-rose-600 border-rose-500/20"
+  },
 ]
 
 export function GoogleDorksGenerator() {
@@ -301,8 +330,11 @@ export function GoogleDorksGenerator() {
   const [copiedIndex, setCopiedIndex] = useState<string | null>(null)
 
   const replaceDomain = (dork: string, inputDomain: string) => {
-    if (!inputDomain) return dork
-    
+    // When no domain: strip optional " site:{domain}" so wordlist dorks work as global search
+    if (!inputDomain) {
+      return dork.replace(/\s*site:\s*\{domain\}/g, "").trim()
+    }
+
     // Split domains by comma and clean up spaces
     const domains = inputDomain.split(',').map(d => d.trim()).filter(d => d.length > 0)
     
@@ -451,8 +483,8 @@ export function GoogleDorksGenerator() {
           </div>
         </div>
 
-        {/* Categories Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        {/* Grid: cada card solo la altura de su contenido, sin espacio vacío abajo */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 items-start">
           {dorkCategories.map((category, categoryIndex) => (
             <Card 
               key={categoryIndex}
