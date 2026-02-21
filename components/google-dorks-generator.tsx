@@ -488,7 +488,7 @@ export function GoogleDorksGenerator() {
           {dorkCategories.map((category, categoryIndex) => (
             <Card 
               key={categoryIndex}
-              className="group bg-white/5 backdrop-blur-md border border-white/10 hover:border-white/20 transition-all duration-300 hover:scale-105 hover:shadow-2xl hover:shadow-purple-500/10"
+              className="group bg-white/5 backdrop-blur-md border border-white/10 hover:border-white/20 transition-all duration-300 hover:shadow-2xl hover:shadow-purple-500/10"
             >
               <CardHeader className="pb-4">
                 <div className="flex items-center justify-between mb-3">
@@ -521,7 +521,7 @@ export function GoogleDorksGenerator() {
                           href={generateGoogleSearchUrl(processedDork)}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="block p-3 bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 rounded-lg text-sm font-mono text-gray-300 hover:text-white transition-all hover:scale-[1.02] break-all"
+                          className="block p-3 bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 rounded-lg text-sm font-mono text-gray-300 hover:text-white transition-colors break-all"
                         >
                           {processedDork}
                         </a>
