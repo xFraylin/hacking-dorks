@@ -1161,7 +1161,7 @@ const dorkCategories: DorkCategory[] = [
 export function GoogleDorksGenerator() {
   const [domain, setDomain] = useState("")
   const [copiedIndex, setCopiedIndex] = useState<string | null>(null)
-  const [activeTab, setActiveTab] = useState<"dorks" | "payloads" | "tools">("dorks")
+  const [activeTab, setActiveTab] = useState<"dorks" | "payloads" | "tools" | "xss-exploit">("dorks")
   const [dorkFilter, setDorkFilter] = useState("all")
   const [dorkSearch, setDorkSearch] = useState("")
   const [payloadFilter, setPayloadFilter] = useState("all")
@@ -1546,6 +1546,17 @@ export function GoogleDorksGenerator() {
               >
                 <Wrench className="h-4 w-4" />
                 Tools
+              </button>
+              <button
+                onClick={() => setActiveTab("xss-exploit")}
+                className={`flex items-center gap-2 px-6 py-3 rounded-xl font-semibold text-sm transition-all ${
+                  activeTab === "xss-exploit"
+                    ? "bg-gradient-to-r from-red-500 to-orange-500 text-white shadow-lg"
+                    : "text-gray-400 hover:text-white"
+                }`}
+              >
+                <Zap className="h-4 w-4" />
+                XSS Exploit
               </button>
             </div>
           </div>
@@ -2102,79 +2113,69 @@ export function GoogleDorksGenerator() {
               </CardContent>
             </Card>
 
-            {/* XSS Exploit Toolkit */}
-            <Card className="bg-white/5 backdrop-blur-md border border-white/10">
-              <CardHeader className="pb-4">
-                <div className="flex items-center gap-3 mb-1">
-                  <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-red-500/10 text-red-400 border border-red-500/20">
-                    <Zap className="h-4 w-4" />
-                    <span className="text-xs font-semibold">XSS Exploit</span>
-                  </div>
-                </div>
-                <CardTitle className="text-white text-xl font-bold">XSS Exploit Toolkit</CardTitle>
-                <p className="text-gray-400 text-sm">Payloads de explotación real organizados por técnica: defacement, exfiltración, keylogging, persistencia y más</p>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex flex-wrap gap-2">
-                  {xssExploitSections.map(section => (
-                    <button
-                      key={section.id}
-                      onClick={() => setXssSection(section.id)}
-                      className={`px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all ${
-                        xssSection === section.id
-                          ? "bg-red-500/20 text-red-300 border-red-500/40"
-                          : "bg-white/5 text-gray-400 border-white/10 hover:border-red-500/30 hover:text-red-300"
-                      }`}
-                    >
-                      {section.title}
-                    </button>
-                  ))}
-                </div>
-                {xssExploitSections.filter(s => s.id === xssSection).map(section => (
-                  <div key={section.id} className="space-y-3">
-                    {section.entries.map((entry, i) => {
-                      const key = `xss-exploit-${section.id}-${i}`
-                      const isCopied = copiedIndex === key
-                      return (
-                        <div key={i} className="p-4 bg-white/5 border border-white/10 rounded-xl space-y-2">
-                          <div className="flex items-start justify-between gap-3">
-                            <div className="flex-1 min-w-0">
-                              <p className="text-sm font-semibold text-white">{entry.name}</p>
-                              <p className="text-xs text-gray-400 mt-0.5">{entry.description}</p>
-                              {entry.tags && entry.tags.length > 0 && (
-                                <div className="flex flex-wrap gap-1 mt-1.5">
-                                  {entry.tags.map(tag => {
-                                    const style =
-                                      tag === "Visual"      ? "bg-cyan-500/10 text-cyan-400 border-cyan-500/20" :
-                                      tag === "Destructive" ? "bg-red-500/10 text-red-400 border-red-500/20" :
-                                      tag === "Stealth"     ? "bg-purple-500/10 text-purple-400 border-purple-500/20" :
-                                      tag === "Persistent"  ? "bg-amber-500/10 text-amber-400 border-amber-500/20" :
-                                      "bg-white/5 text-gray-400 border-white/10"
-                                    return <span key={tag} className={`inline-flex px-1.5 py-0.5 rounded text-[10px] font-medium border ${style}`}>{tag}</span>
-                                  })}
-                                </div>
-                              )}
-                            </div>
-                            <Button
-                              size="icon"
-                              variant="ghost"
-                              className="h-7 w-7 flex-shrink-0 hover:bg-white/20 rounded-lg"
-                              onClick={() => copyToClipboard(entry.payload, key)}
-                            >
-                              {isCopied ? <Check className="h-3.5 w-3.5 text-green-400" /> : <Copy className="h-3.5 w-3.5 text-gray-400" />}
-                            </Button>
-                          </div>
-                          <pre className="p-3 bg-black/40 border border-white/10 rounded-lg text-xs font-mono text-red-300 break-all whitespace-pre-wrap leading-relaxed">
-                            {entry.payload}
-                          </pre>
-                        </div>
-                      )
-                    })}
-                  </div>
-                ))}
-              </CardContent>
-            </Card>
+          </div>
+        )}
 
+        {/* ── XSS Exploit Tab ── */}
+        {activeTab === "xss-exploit" && (
+          <div className="space-y-6 max-w-4xl mx-auto">
+            <div className="flex flex-wrap gap-2">
+              {xssExploitSections.map(section => (
+                <button
+                  key={section.id}
+                  onClick={() => setXssSection(section.id)}
+                  className={`px-4 py-2 rounded-xl text-sm font-semibold border transition-all ${
+                    xssSection === section.id
+                      ? "bg-gradient-to-r from-red-500 to-orange-500 text-white border-transparent shadow-md"
+                      : "bg-white/5 text-gray-400 border-white/10 hover:border-red-500/30 hover:text-red-300"
+                  }`}
+                >
+                  {section.title}
+                </button>
+              ))}
+            </div>
+            {xssExploitSections.filter(s => s.id === xssSection).map(section => (
+              <div key={section.id} className="space-y-3">
+                {section.entries.map((entry, i) => {
+                  const key = `xss-exploit-${section.id}-${i}`
+                  const isCopied = copiedIndex === key
+                  return (
+                    <div key={i} className="p-4 bg-white/5 backdrop-blur-md border border-white/10 rounded-xl space-y-2">
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-semibold text-white">{entry.name}</p>
+                          <p className="text-xs text-gray-400 mt-0.5">{entry.description}</p>
+                          {entry.tags && entry.tags.length > 0 && (
+                            <div className="flex flex-wrap gap-1 mt-1.5">
+                              {entry.tags.map(tag => {
+                                const style =
+                                  tag === "Visual"      ? "bg-cyan-500/10 text-cyan-400 border-cyan-500/20" :
+                                  tag === "Destructive" ? "bg-red-500/10 text-red-400 border-red-500/20" :
+                                  tag === "Stealth"     ? "bg-purple-500/10 text-purple-400 border-purple-500/20" :
+                                  tag === "Persistent"  ? "bg-amber-500/10 text-amber-400 border-amber-500/20" :
+                                  "bg-white/5 text-gray-400 border-white/10"
+                                return <span key={tag} className={`inline-flex px-1.5 py-0.5 rounded text-[10px] font-medium border ${style}`}>{tag}</span>
+                              })}
+                            </div>
+                          )}
+                        </div>
+                        <Button
+                          size="icon"
+                          variant="ghost"
+                          className="h-7 w-7 flex-shrink-0 hover:bg-white/20 rounded-lg"
+                          onClick={() => copyToClipboard(entry.payload, key)}
+                        >
+                          {isCopied ? <Check className="h-3.5 w-3.5 text-green-400" /> : <Copy className="h-3.5 w-3.5 text-gray-400" />}
+                        </Button>
+                      </div>
+                      <pre className="p-3 bg-black/40 border border-white/10 rounded-lg text-xs font-mono text-red-300 break-all whitespace-pre-wrap leading-relaxed">
+                        {entry.payload}
+                      </pre>
+                    </div>
+                  )
+                })}
+              </div>
+            ))}
           </div>
         )}
 
