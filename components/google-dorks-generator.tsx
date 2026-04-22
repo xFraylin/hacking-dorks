@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Copy, Check, ExternalLink, Search, Sparkles, Shield, Zap, Target, Eye, Lock, AlertTriangle, Database, Code, FileText, Globe, Github, Linkedin, Video, Bug, Wrench, Download, Terminal, Key, Hash, List } from "lucide-react"
 import { sqlInjectionDorks, cctvDorks, lfiDorks, sensitiveDataDorks } from "@/components/dork-data/wordlist-categories"
-import { allPayloadCategories, type PayloadCategory } from "@/components/payload-data/attack-payloads"
+import { allPayloadCategories, xssExploitSections, type PayloadCategory } from "@/components/payload-data/attack-payloads"
 
 interface DorkCategory {
   title: string
@@ -1189,6 +1189,8 @@ export function GoogleDorksGenerator() {
   const [subDomain, setSubDomain] = useState("")
   const [subList, setSubList] = useState<string[]>([])
   const [subCopied, setSubCopied] = useState(false)
+  // XSS Exploit Toolkit state
+  const [xssSection, setXssSection] = useState("defacement")
 
   const dorkGroups = ["all", "Recon", "Web Vulns", "Credenciales", "Archivos", "Infraestructura", "Cloud", "CMS", "OSINT"]
 
@@ -1616,7 +1618,7 @@ export function GoogleDorksGenerator() {
           {activeTab === "payloads" && (
             <div className="max-w-3xl mx-auto mb-12 space-y-4">
               <div className="flex flex-wrap justify-center gap-2">
-                {["all", "SQL Injection", "NoSQL Injection", "XSS", "RCE", "SSTI", "LFI / Traversal", "XXE", "SSRF", "Open Redirect", "CRLF", "HTTP Smuggling", "Log4Shell", "GraphQL", "Prototype Pollution", "Host Header", "JWT", "File Upload", "Deserialization", "CORS", "OAuth", "WebSocket", "Race Condition", "LDAP Injection", "XPath Injection", "Email Injection", "HPP", "Cache Poisoning", "SQL Truncation", "XSS Exploit"].map((f) => (
+                {["all", "SQL Injection", "NoSQL Injection", "XSS", "RCE", "SSTI", "LFI / Traversal", "XXE", "SSRF", "Open Redirect", "CRLF", "HTTP Smuggling", "Log4Shell", "GraphQL", "Prototype Pollution", "Host Header", "JWT", "File Upload", "Deserialization", "CORS", "OAuth", "WebSocket", "Race Condition", "LDAP Injection", "XPath Injection", "Email Injection", "HPP", "Cache Poisoning", "SQL Truncation"].map((f) => (
                   <button
                     key={f}
                     onClick={() => setPayloadFilter(f)}
@@ -2097,6 +2099,66 @@ export function GoogleDorksGenerator() {
                     </p>
                   </>
                 )}
+              </CardContent>
+            </Card>
+
+            {/* XSS Exploit Toolkit */}
+            <Card className="bg-white/5 backdrop-blur-md border border-white/10">
+              <CardHeader className="pb-4">
+                <div className="flex items-center gap-3 mb-1">
+                  <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-red-500/10 text-red-400 border border-red-500/20">
+                    <Zap className="h-4 w-4" />
+                    <span className="text-xs font-semibold">XSS Exploit</span>
+                  </div>
+                </div>
+                <CardTitle className="text-white text-xl font-bold">XSS Exploit Toolkit</CardTitle>
+                <p className="text-gray-400 text-sm">Payloads de explotación real organizados por técnica: defacement, exfiltración, keylogging, persistencia y más</p>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="flex flex-wrap gap-2">
+                  {xssExploitSections.map(section => (
+                    <button
+                      key={section.id}
+                      onClick={() => setXssSection(section.id)}
+                      className={`px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all ${
+                        xssSection === section.id
+                          ? "bg-red-500/20 text-red-300 border-red-500/40"
+                          : "bg-white/5 text-gray-400 border-white/10 hover:border-red-500/30 hover:text-red-300"
+                      }`}
+                    >
+                      {section.title}
+                    </button>
+                  ))}
+                </div>
+                {xssExploitSections.filter(s => s.id === xssSection).map(section => (
+                  <div key={section.id} className="space-y-3">
+                    {section.entries.map((entry, i) => {
+                      const key = `xss-exploit-${section.id}-${i}`
+                      const isCopied = copiedIndex === key
+                      return (
+                        <div key={i} className="p-4 bg-white/5 border border-white/10 rounded-xl space-y-2">
+                          <div className="flex items-start justify-between gap-3">
+                            <div>
+                              <p className="text-sm font-semibold text-white">{entry.name}</p>
+                              <p className="text-xs text-gray-400 mt-0.5">{entry.description}</p>
+                            </div>
+                            <Button
+                              size="icon"
+                              variant="ghost"
+                              className="h-7 w-7 flex-shrink-0 hover:bg-white/20 rounded-lg"
+                              onClick={() => copyToClipboard(entry.payload, key)}
+                            >
+                              {isCopied ? <Check className="h-3.5 w-3.5 text-green-400" /> : <Copy className="h-3.5 w-3.5 text-gray-400" />}
+                            </Button>
+                          </div>
+                          <pre className="p-3 bg-black/40 border border-white/10 rounded-lg text-xs font-mono text-red-300 break-all whitespace-pre-wrap leading-relaxed">
+                            {entry.payload}
+                          </pre>
+                        </div>
+                      )
+                    })}
+                  </div>
+                ))}
               </CardContent>
             </Card>
 

