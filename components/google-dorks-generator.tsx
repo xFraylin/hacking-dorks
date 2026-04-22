@@ -2138,9 +2138,22 @@ export function GoogleDorksGenerator() {
                       return (
                         <div key={i} className="p-4 bg-white/5 border border-white/10 rounded-xl space-y-2">
                           <div className="flex items-start justify-between gap-3">
-                            <div>
+                            <div className="flex-1 min-w-0">
                               <p className="text-sm font-semibold text-white">{entry.name}</p>
                               <p className="text-xs text-gray-400 mt-0.5">{entry.description}</p>
+                              {entry.tags && entry.tags.length > 0 && (
+                                <div className="flex flex-wrap gap-1 mt-1.5">
+                                  {entry.tags.map(tag => {
+                                    const style =
+                                      tag === "Visual"      ? "bg-cyan-500/10 text-cyan-400 border-cyan-500/20" :
+                                      tag === "Destructive" ? "bg-red-500/10 text-red-400 border-red-500/20" :
+                                      tag === "Stealth"     ? "bg-purple-500/10 text-purple-400 border-purple-500/20" :
+                                      tag === "Persistent"  ? "bg-amber-500/10 text-amber-400 border-amber-500/20" :
+                                      "bg-white/5 text-gray-400 border-white/10"
+                                    return <span key={tag} className={`inline-flex px-1.5 py-0.5 rounded text-[10px] font-medium border ${style}`}>{tag}</span>
+                                  })}
+                                </div>
+                              )}
                             </div>
                             <Button
                               size="icon"
