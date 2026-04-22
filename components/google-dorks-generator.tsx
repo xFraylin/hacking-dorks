@@ -1191,6 +1191,12 @@ export function GoogleDorksGenerator() {
   const [subCopied, setSubCopied] = useState(false)
   // XSS Exploit Toolkit state
   const [xssSection, setXssSection] = useState("defacement")
+  const [attackerUrl, setAttackerUrl] = useState("")
+
+  const injectUrl = (payload: string) => {
+    const host = attackerUrl.trim().replace(/^https?:\/\//i, "")
+    return host ? payload.replace(/ATTACKER\.com/g, host) : payload
+  }
 
   const dorkGroups = ["all", "Recon", "Web Vulns", "Credenciales", "Archivos", "Infraestructura", "Cloud", "CMS", "OSINT"]
 
@@ -2119,6 +2125,21 @@ export function GoogleDorksGenerator() {
         {/* ── XSS Exploit Tab ── */}
         {activeTab === "xss-exploit" && (
           <div className="space-y-6 max-w-4xl mx-auto">
+            {/* Attacker URL input */}
+            <div className="flex items-center gap-3 p-4 bg-white/5 border border-red-500/20 rounded-xl">
+              <Target className="h-4 w-4 text-red-400 flex-shrink-0" />
+              <span className="text-xs font-semibold text-red-400 flex-shrink-0">Tu servidor</span>
+              <input
+                type="text"
+                placeholder="xyz.burpcollaborator.net  ·  tu-vps.com  ·  abc.oast.fun"
+                value={attackerUrl}
+                onChange={e => setAttackerUrl(e.target.value)}
+                className="flex-1 px-3 py-1.5 bg-black/30 border border-white/10 rounded-lg text-sm font-mono text-white placeholder-gray-600 focus:outline-none focus:border-red-400/50"
+              />
+              {attackerUrl.trim() && (
+                <span className="text-[11px] font-semibold text-green-400 flex-shrink-0">✓ activo</span>
+              )}
+            </div>
             <div className="flex flex-wrap gap-2">
               {xssExploitSections.map(section => (
                 <button
@@ -2163,13 +2184,13 @@ export function GoogleDorksGenerator() {
                           size="icon"
                           variant="ghost"
                           className="h-7 w-7 flex-shrink-0 hover:bg-white/20 rounded-lg"
-                          onClick={() => copyToClipboard(entry.payload, key)}
+                          onClick={() => copyToClipboard(injectUrl(entry.payload), key)}
                         >
                           {isCopied ? <Check className="h-3.5 w-3.5 text-green-400" /> : <Copy className="h-3.5 w-3.5 text-gray-400" />}
                         </Button>
                       </div>
                       <pre className="p-3 bg-black/40 border border-white/10 rounded-lg text-xs font-mono text-red-300 break-all whitespace-pre-wrap leading-relaxed">
-                        {entry.payload}
+                        {injectUrl(entry.payload)}
                       </pre>
                     </div>
                   )
