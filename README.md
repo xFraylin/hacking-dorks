@@ -1,8 +1,8 @@
 # Hacking Dorks
 
-> Advanced Security Research Toolkit — Google Dorks, Attack Payloads & Pentesting Tools
+> Advanced Security Research Toolkit — Google Dorks, Attack Payloads, Pentesting Tools & XSS Exploit Toolkit
 
-A modern, interactive web application for security research, penetration testing, and authorized vulnerability assessments. Features a multi-tab interface with Google Dork generation, categorized attack payloads, and an integrated tools suite.
+A modern, interactive web application for security research, penetration testing, and authorized vulnerability assessments. Features a 4-tab interface with Google Dork generation, categorized attack payloads, an integrated tools suite, and a dedicated XSS Exploit Toolkit.
 
 ![Next.js](https://img.shields.io/badge/Next.js-16.0.0-black?style=for-the-badge&logo=next.js)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue?style=for-the-badge&logo=typescript)
@@ -14,10 +14,13 @@ A modern, interactive web application for security research, penetration testing
 
 ## Features
 
-- **3-Tab Interface** — Google Dorks, Attack Payloads, and Tools in one place
+- **4-Tab Interface** — Google Dorks, Attack Payloads, Tools, and XSS Exploit Toolkit
 - **70+ Dork Categories** — Organized in 8 groups with filter buttons and keyword search
-- **33 Payload Categories** — SQLi, XSS, RCE, SSTI, LFI, XXE, SSRF, LDAP, XPath, Cache Poisoning and more
-- **6 Integrated Tools** — Encoder/Decoder, Reverse Shell Generator, Hash Identifier, JWT Builder, Subdomain Wordlist Generator
+- **40 Payload Categories** — SQLi, XSS, RCE, SSTI, LFI, XXE, SSRF, LDAP, XPath, Cache Poisoning and more
+- **5 Integrated Tools** — Encoder/Decoder, Reverse Shell Generator, Hash Identifier, JWT Builder, Subdomain Wordlist Generator
+- **XSS Exploit Toolkit** — 9 sections (Defacement, UI Injection, Redirect, CSRF via XSS, Exfil, Keylogging, Flow Control, Persistence, Blind XSS) with attacker URL substitution
+- **Attacker URL Input** — Type your server/Burp Collaborator URL once and it auto-replaces in all XSS payloads
+- **Payload Tags** — Each XSS exploit entry tagged as [Visual], [Destructive], [Stealth], [Persistent]
 - **Export & Copy** — Per-payload copy, Copy All, and Export `.txt` per category
 - **Global Search** — Keyword search across dorks and payloads independently
 - **Domain Support** — Single or multiple domains with wildcard support
@@ -85,6 +88,25 @@ pnpm start
 | JWT Builder | Build `alg:none` bypass tokens or HS256 signed JWTs |
 | Subdomain Wordlist | 100+ common prefixes, export `.txt`, ffuf-ready command |
 
+### XSS Exploit Toolkit Tab
+
+1. **Set your server** — Enter your Burp Collaborator / VPS / interactsh URL once — all payloads update automatically
+2. **Select section** — Navigate between 9 technique categories
+3. **Read tags** — [Visual] [Destructive] [Stealth] [Persistent] on each entry
+4. **Copy** — Click the copy icon to get the payload with your URL already injected
+
+| Section | Entries | Description |
+|---------|---------|-------------|
+| DOM / Defacement | 27 | Full body replace, overlay, shake, blur, iFrame injection, watermark and more |
+| UI Injection | 4 | Fake login overlay, phish button, alert banner, payment form swap |
+| Redirección | 8 | Immediate, delayed, history-based and JS URI redirects |
+| Acciones como usuario | 12 | Password change, account deletion, CSRF token grab, admin backdoor |
+| Exfiltración | 19 | Cookies, localStorage, DOM snapshot, API response, window.name, full context dump |
+| Keylogging | 10 | Per-key, buffered, input monitor, selection capture, MutationObserver hook |
+| Control de flujo | 13 | Fetch/XHR/WebSocket intercept, opener hijack, response logger |
+| Persistencia | 12 | Service Worker, IndexedDB, BroadcastChannel, MutationObserver re-injector |
+| Blind XSS | 10 | XSS Hunter style, Burp Collaborator ping, interactsh, admin screenshotter |
+
 ## Dork Categories (70+)
 
 ### Recon
@@ -111,7 +133,7 @@ AEM Content Paths, WordPress Vulnerabilities
 ### OSINT
 Personal Data Parameters, Vulnerability Reports, Community Mentions, Code Snippet Sites, Bug Bounty Programs
 
-## Payload Categories (33)
+## Payload Categories (40)
 
 ### SQL Injection (7)
 Classic, UNION Based, Error Based, Blind Boolean, Time Based Blind, Obfuscated / WAF Bypass, Out-of-Band (OOB)
@@ -119,7 +141,7 @@ Classic, UNION Based, Error Based, Blind Boolean, Time Based Blind, Obfuscated /
 ### Injection (6)
 NoSQL / MongoDB, LDAP, XPath, Command Injection Classic, Command Injection Obfuscated, Email Header Injection
 
-### XSS (5)
+### XSS (6)
 Classic, Filter Bypass, Obfuscated / Encodings, DOM Based, Polyglots, CSP Bypass
 
 ### Server-Side (4)
@@ -131,8 +153,8 @@ Open Redirect, CRLF Injection, HTTP Request Smuggling, HTTP Parameter Pollution,
 ### Auth & Session (4)
 JWT Attacks, Host Header Injection, OAuth / OIDC, CORS Misconfiguration
 
-### Modern (5)
-File Upload Bypass, Deserialization (Java/PHP/Python), WebSocket Injection & CSWSH, Race Conditions, Business Logic / Mass Assignment
+### Modern (4)
+File Upload Bypass, Deserialization (Java/PHP/Python), WebSocket Injection & CSWSH, Race Conditions
 
 ## Customization
 
@@ -172,6 +194,19 @@ export const myCategory: PayloadCategory = {
 > **Note:** Payloads containing `${...}`, backticks, or `\NNN` octal sequences must use regular strings (`"..."`) instead of template literals to avoid TypeScript strict mode errors.
 
 Then add it to `allPayloadCategories[]` and the filter tag list in `google-dorks-generator.tsx`.
+
+### Adding XSS Exploit Entries
+
+Open `components/payload-data/attack-payloads.ts` and add to the relevant `XssExploitSection` in `xssExploitSections[]`:
+
+```typescript
+{
+  name: "🎯 Entry Name",
+  description: "Short description of what this does.",
+  payload: "your.payload('here')",
+  tags: ["Visual"]  // Visual | Destructive | Stealth | Persistent
+}
+```
 
 ## Deployment
 
