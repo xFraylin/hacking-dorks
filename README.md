@@ -15,10 +15,9 @@ A modern, interactive web application for security research, penetration testing
 ## Features
 
 - **3-Tab Interface** — Google Dorks, Attack Payloads, and Tools in one place
-- **46+ Dork Categories** — Organized in 8 groups with filter buttons and keyword search
-- **27 Payload Categories** — SQLi, XSS, RCE, SSTI, LFI, XXE, SSRF, and more with obfuscation variants
-- **Encoder/Decoder** — 11 encoding operations (Base64, URL, HTML, Hex, ROT13, JWT decode, and more)
-- **Reverse Shell Generator** — 20 shell types with custom IP/port
+- **70+ Dork Categories** — Organized in 8 groups with filter buttons and keyword search
+- **33 Payload Categories** — SQLi, XSS, RCE, SSTI, LFI, XXE, SSRF, LDAP, XPath, Cache Poisoning and more
+- **6 Integrated Tools** — Encoder/Decoder, Reverse Shell Generator, Hash Identifier, JWT Builder, Subdomain Wordlist Generator
 - **Export & Copy** — Per-payload copy, Copy All, and Export `.txt` per category
 - **Global Search** — Keyword search across dorks and payloads independently
 - **Domain Support** — Single or multiple domains with wildcard support
@@ -43,15 +42,11 @@ A modern, interactive web application for security research, penetration testing
 2. **Install dependencies**
    ```bash
    pnpm install
-   # or
-   npm install
    ```
 
 3. **Start development server**
    ```bash
    pnpm dev
-   # or
-   npm run dev
    ```
 
 4. **Open your browser**
@@ -68,146 +63,105 @@ pnpm start
 
 ### Google Dorks Tab
 
-1. **Enter Target Domain(s)**
-   - Single domain: `example.com`
-   - Multiple domains: `example.com, target.com, *.domain.com`
-
-2. **Filter by Group**
-   - Use the group filter buttons: Recon, Web Vulns, Credenciales, Archivos, Infraestructura, Cloud, CMS, OSINT
-   - Click a group to narrow visible categories
-
-3. **Search Dorks**
-   - Type in the search box to filter by category title, description, or dork content
-
-4. **Execute Queries**
-   - Click individual dorks to open in Google
-   - Use "Open All" to open all visible dorks at once
+1. **Enter Target Domain(s)** — `example.com` or `example.com, target.com, *.domain.com`
+2. **Filter by Group** — Recon, Web Vulns, Credenciales, Archivos, Infraestructura, Cloud, CMS, OSINT
+3. **Search Dorks** — keyword search across title, description and dork content
+4. **Execute** — click a dork to open in Google, or use "Open All" for bulk recon
 
 ### Payloads Tab
 
-1. **Filter by Tag** — select an attack type (SQLi, XSS, RCE, SSTI, LFI, XXE, SSRF, etc.)
-2. **Search Payloads** — keyword search across all payload titles and descriptions
-3. **Copy individual payloads** with the copy icon next to each one
-4. **Copy All** — copies the entire payload list for a category
-5. **Export .txt** — downloads all payloads in the category as a text file
+1. **Filter by Tag** — 29 attack type filters
+2. **Search** — keyword search across all payloads
+3. **Copy** — per-payload copy icon or "Copy All" button per category
+4. **Export** — download any category as `.txt`
 
 ### Tools Tab
 
-**Encoder/Decoder**
-- Paste any string and choose an operation:
-  - Base64 Encode / Decode
-  - URL Encode / Decode
-  - HTML Encode / Decode
-  - Hex Encode / Decode
-  - ROT13
-  - JWT Decode (header + payload)
-  - MD5 Hash (client-side)
+| Tool | Description |
+|------|-------------|
+| Encoder / Decoder | URL, Base64, HTML, Hex, Unicode, JS Escape (11 operations) |
+| Reverse Shell Generator | 20+ shell types with custom LHOST/LPORT |
+| Hash Identifier | Detects MD5, SHA-1/256/512, bcrypt, NTLM, Argon2, JWT and more |
+| JWT Builder | Build `alg:none` bypass tokens or HS256 signed JWTs |
+| Subdomain Wordlist | 100+ common prefixes, export `.txt`, ffuf-ready command |
 
-**Reverse Shell Generator**
-- Enter listener IP and port
-- Select shell type from 20 options
-- Click to copy the generated command
-
-Available shell types: Bash TCP, Bash UDP, Python 3, PHP, Perl, Ruby, Netcat (-e), Netcat (mkfifo), Socat, Socat PTY, Node.js, PowerShell, Golang, AWK, Lua, cURL upload, and more.
-
-## Dork Categories
+## Dork Categories (70+)
 
 ### Recon
-- PHP Parameters, API Mapping, URL Tokens, Authentication Pages, Test Environments, AEM Paths, Community Mentions, Bug Bounty Programs
+PHP Parameter Endpoints, API Surface Mapping, Critical URL Tokens, Authentication Endpoints, Test & Staging Sites, API Documentation, Wayback & Cache, Subdomains & Virtual Hosts, Juicy Extensions, Mobile API & Backend Endpoints
 
 ### Web Vulns
-- XSS Parameters, Redirect Parameters, SQL Injection Parameters, SSRF Parameters, File Inclusion, Command Execution, File Upload, Error Pages
+XSS Parameters, XSS Reflected Parameters, XSS Forms & Stored Vectors, Redirect Parameters, SQL Injection Parameters, SQLi Error Messages, SQLi Login & Auth Panels, SQLi Numeric Parameters, SSRF Parameters, File Inclusion Candidates, File Inclusion Config & Logs, Command Execution, File Upload Discovery, GraphQL Endpoints, CORS Misconfiguration, WebSocket Endpoints, OAuth & SSO Endpoints, Password Reset & Account Takeover
 
 ### Credenciales
-- Exposed Credentials, GitHub Leaks, Configuration Files, Exposed API Keys
+Exposed Credentials, Configuration Secrets, GitHub Leaks, Exposed API Keys & Tokens
 
 ### Archivos
-- Sensitive Files, Backup Archives, Sensitive Documents, Confidential Docs, API Documentation
+Sensitive File Discovery, Confidential Documents, Backup Archives, Sensitive Documents, Exposed .git / .env / .DS_Store, Directory Listing
 
 ### Infraestructura
-- Vulnerability Reports, Personal Data URLs, Open Directories, Login Panels, Database Errors
+Exposed Admin Panels, Exposed Databases & Caches, Kubernetes & Docker Exposed, Jupyter & Notebooks, IoT & Industrial Devices, Spring Boot Actuator, Default Credentials Panels, Exposed Metrics & Health
 
 ### Cloud
-- Cloud Storage Buckets, Firebase References, Package Repositories (Artifactory)
+Cloud Storage Buckets, Package Repositories, Firebase References, Cloud & Serverless Exposure
 
 ### CMS
-- WordPress, Joomla, Drupal, Magento, PrestaShop specific dorks
+AEM Content Paths, WordPress Vulnerabilities
 
 ### OSINT
-- Code Snippets (pastebins), Pastebin Leaks, Social Profiles, Job Listings with tech stack
+Personal Data Parameters, Vulnerability Reports, Community Mentions, Code Snippet Sites, Bug Bounty Programs
 
-## Payload Categories
+## Payload Categories (33)
 
-### SQL Injection (7 categories)
-- Classic SQLi — `' OR 1=1--`, `UNION SELECT`, error-based fingerprinting
-- UNION-based — column enumeration, data extraction
-- Error-based — `extractvalue()`, `updatexml()`, dialect-specific
-- Blind Boolean — conditional true/false responses
-- Time-based Blind — `SLEEP()`, `WAITFOR DELAY`, `pg_sleep()`
-- Obfuscated SQLi — case mixing, comment insertion, encoding
-- Out-of-Band — DNS exfil via `LOAD_FILE`, `UTL_HTTP`
+### SQL Injection (7)
+Classic, UNION Based, Error Based, Blind Boolean, Time Based Blind, Obfuscated / WAF Bypass, Out-of-Band (OOB)
 
-### NoSQL Injection
-- MongoDB operator injection (`$gt`, `$where`, `$regex`)
+### Injection (6)
+NoSQL / MongoDB, LDAP, XPath, Command Injection Classic, Command Injection Obfuscated, Email Header Injection
 
-### XSS (5 categories)
-- Classic XSS — basic `<script>`, event handlers, SVG/IMG vectors
-- Filter Bypass — tag/attribute obfuscation, encoding tricks
-- Obfuscated XSS — JavaScript `String.fromCharCode`, hex/unicode encoding
-- DOM-based XSS — `document.write`, `innerHTML`, `eval` sinks
-- Polyglot XSS — single payloads that work across multiple contexts
+### XSS (5)
+Classic, Filter Bypass, Obfuscated / Encodings, DOM Based, Polyglots, CSP Bypass
 
-### Command Injection (2 categories)
-- Classic — `;`, `|`, `&&`, backtick, `$()` substitution
-- Obfuscated — `${IFS}`, `printf` hex/octal, `{cat,/etc/passwd}`, base64 piping
+### Server-Side (4)
+SSTI (Jinja2, Twig, Freemarker, ERB, Spring, Node), Path Traversal / LFI, XXE, SSRF
 
-### Other Attack Vectors
-- SSTI — Jinja2, Twig, Freemarker, Velocity, Smarty, Pebble templates
-- Path Traversal / LFI — `../` variants, null bytes, URL encoding, Windows paths
-- XXE — classic, blind OOB, error-based, SVG/XLSX vectors
-- SSRF — internal metadata, cloud provider endpoints, protocol wrappers
-- Open Redirect — parameter-based, protocol-relative, data URIs
-- CRLF Injection — header injection, response splitting, log poisoning
-- HTTP Request Smuggling — CL.TE, TE.CL, TE.TE desync
-- Log4Shell — `${jndi:ldap://...}`, nested obfuscation, bypass variants
-- GraphQL Attacks — introspection, batching, field suggestions, aliases
-- Prototype Pollution — `__proto__`, `constructor.prototype` gadgets
-- Host Header Injection — password reset poisoning, cache poisoning
-- JWT Attacks — `alg:none`, HS256 with RS256 public key, key confusion
+### Web Attacks (9)
+Open Redirect, CRLF Injection, HTTP Request Smuggling, HTTP Parameter Pollution, Web Cache Poisoning, SQL Truncation & Mass Assignment, Log4Shell / JNDI, GraphQL, Prototype Pollution
+
+### Auth & Session (4)
+JWT Attacks, Host Header Injection, OAuth / OIDC, CORS Misconfiguration
+
+### Modern (5)
+File Upload Bypass, Deserialization (Java/PHP/Python), WebSocket Injection & CSWSH, Race Conditions, Business Logic / Mass Assignment
 
 ## Customization
 
 ### Adding New Dork Categories
 
-1. Open `components/google-dorks-generator.tsx`
-2. Add a new entry to the `dorkCategories` array:
+Open `components/google-dorks-generator.tsx` and add to `dorkCategories[]`:
 
 ```typescript
 {
-  title: "Your Category Name",
+  title: "Your Category",
   dorks: ["site:{domain} your:dork:query"],
   icon: <YourIcon className="h-4 w-4" />,
-  description: "Description of what this category does",
+  description: "What this finds",
   color: "bg-color-500/10 text-color-600 border-color-500/20",
-  group: "Recon"  // must match one of the defined groups
+  group: "Recon"  // Recon | Web Vulns | Credenciales | Archivos | Infraestructura | Cloud | CMS | OSINT
 }
 ```
 
-Available groups: `"Recon"`, `"Web Vulns"`, `"Credenciales"`, `"Archivos"`, `"Infraestructura"`, `"Cloud"`, `"CMS"`, `"OSINT"`
-
 ### Adding New Payload Categories
 
-1. Open `components/payload-data/attack-payloads.ts`
-2. Add a new `PayloadCategory` object and include it in `allPayloadCategories[]`:
+Open `components/payload-data/attack-payloads.ts`:
 
 ```typescript
 export const myCategory: PayloadCategory = {
   id: "my-category",
   title: "My Category",
   description: "What these payloads target",
-  icon: "🎯",
-  color: "bg-color-500/10 text-color-600 border-color-500/20",
-  tags: ["tag1", "tag2"],
+  tag: "My Tag",
+  tagColor: "bg-color-500/10 text-color-400 border-color-500/20",
   payloads: [
     "payload one",
     "payload two",
@@ -215,46 +169,38 @@ export const myCategory: PayloadCategory = {
 }
 ```
 
-> **Note:** If any payload contains `${...}`, backticks, or octal escape sequences (`\NNN`), use regular strings (`"..."`) instead of template literals to avoid TypeScript/Turbopack strict mode errors.
+> **Note:** Payloads containing `${...}`, backticks, or `\NNN` octal sequences must use regular strings (`"..."`) instead of template literals to avoid TypeScript strict mode errors.
+
+Then add it to `allPayloadCategories[]` and the filter tag list in `google-dorks-generator.tsx`.
 
 ## Deployment
 
 ### GitHub Pages (Current)
 
-The application is automatically deployed to GitHub Pages using GitHub Actions:
-
-1. Push to `main` branch
-2. GitHub Actions builds and deploys automatically
-3. Site available at `https://xfraylin.github.io/hacking-dorks`
+Automatically deployed via GitHub Actions on every push to `main`.
+Live at: `https://xfraylin.github.io/hacking-dorks`
 
 ### Other Platforms
 
 - **Vercel**: `vercel --prod`
-- **Netlify**: Connect repository for automatic deploys
+- **Netlify**: connect repository for automatic deploys
 
 ## Legal Disclaimer
 
 **For educational and authorized security research only.**
 
-This tool is intended for:
-- Legitimate security testing
-- Authorized penetration testing
-- Authorized vulnerability assessments
-- CTF competitions and educational purposes
-
-Users are responsible for ensuring they have proper authorization before conducting any security research activities. Unauthorized use against systems you do not own or have explicit permission to test is illegal.
+This tool is intended for legitimate security testing, authorized penetration testing, CTF competitions, and educational purposes. Users are responsible for ensuring they have proper authorization before conducting any security research activities.
 
 ## Contributing
 
 1. Fork the repository
 2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
+3. Commit your changes
+4. Push and open a Pull Request
 
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+MIT License — see [LICENSE](LICENSE) for details.
 
 ## Author
 
@@ -266,9 +212,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 - Dork inspiration from [ExploitDB Google Hacking Database](https://www.exploit-db.com/google-hacking-database)
 - Payload references from [PayloadsAllTheThings](https://github.com/swisskyrepo/PayloadsAllTheThings)
-- Built with [Next.js](https://nextjs.org/)
-- UI components from [Radix UI](https://www.radix-ui.com/)
-- Icons from [Lucide React](https://lucide.dev/)
+- Built with [Next.js](https://nextjs.org/) · [Radix UI](https://www.radix-ui.com/) · [Lucide React](https://lucide.dev/)
 
 ---
 
