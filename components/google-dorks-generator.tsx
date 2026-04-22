@@ -1616,7 +1616,7 @@ export function GoogleDorksGenerator() {
           {activeTab === "payloads" && (
             <div className="max-w-3xl mx-auto mb-12 space-y-4">
               <div className="flex flex-wrap justify-center gap-2">
-                {["all", "SQL Injection", "NoSQL Injection", "XSS", "RCE", "SSTI", "LFI / Traversal", "XXE", "SSRF", "Open Redirect", "CRLF", "HTTP Smuggling", "Log4Shell", "GraphQL", "Prototype Pollution", "Host Header", "JWT", "File Upload", "Deserialization", "CORS", "OAuth", "WebSocket", "Race Condition", "LDAP Injection", "XPath Injection", "Email Injection", "HPP", "Cache Poisoning", "SQL Truncation"].map((f) => (
+                {["all", "SQL Injection", "NoSQL Injection", "XSS", "RCE", "SSTI", "LFI / Traversal", "XXE", "SSRF", "Open Redirect", "CRLF", "HTTP Smuggling", "Log4Shell", "GraphQL", "Prototype Pollution", "Host Header", "JWT", "File Upload", "Deserialization", "CORS", "OAuth", "WebSocket", "Race Condition", "LDAP Injection", "XPath Injection", "Email Injection", "HPP", "Cache Poisoning", "SQL Truncation", "XSS Exploit"].map((f) => (
                   <button
                     key={f}
                     onClick={() => setPayloadFilter(f)}
