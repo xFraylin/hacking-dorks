@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Copy, Check, ExternalLink, Search, Sparkles, Shield, Zap, Target, Eye, Lock, AlertTriangle, Database, Code, FileText, Globe, Github, Linkedin, Video, Bug, Wrench, Download, Terminal, Key, Hash, List } from "lucide-react"
+import { Copy, Check, ExternalLink, Search, Sparkles, Shield, Zap, Target, Eye, Lock, AlertTriangle, Database, Code, FileText, Globe, Github, Linkedin, Video, Bug, Wrench, Download, Terminal, Key, Hash, List, ShoppingBag, Mail, Cloud } from "lucide-react"
 import { sqlInjectionDorks, cctvDorks, lfiDorks, sensitiveDataDorks } from "@/components/dork-data/wordlist-categories"
 import { allPayloadCategories, xssExploitSections, type PayloadCategory } from "@/components/payload-data/attack-payloads"
 
@@ -1156,10 +1156,1274 @@ const dorkCategories: DorkCategory[] = [
     color: "bg-red-500/10 text-red-600 border-red-500/20",
     group: "Web Vulns"
   },
+  // ── SSTI ──────────────────────────────────────────────────────────────────
+  {
+    title: "SSTI — Template Injection",
+    dorks: [
+      `site:{domain} inurl:"?template=" | inurl:"?view=" | inurl:"?page=" | inurl:"?layout="`,
+      `site:{domain} inurl:"?theme=" | inurl:"?skin=" | inurl:"?style="`,
+      `site:{domain} inurl:"?lang=" | inurl:"?locale=" | inurl:"?format="`,
+      `site:{domain} inurl:"?render=" | inurl:"?engine=" | inurl:"?tpl="`,
+      `site:{domain} inurl:"?subject=" | inurl:"?body=" | inurl:"?content="`,
+      `site:{domain} ext:twig | ext:jinja | ext:j2`,
+      `site:{domain} intext:"Jinja2" | intext:"Twig" | intext:"Velocity" | intext:"Freemarker"`,
+      `site:{domain} intext:"TemplateNotFound" | intext:"TemplateSyntaxError"`,
+      `site:{domain} intext:"{{" intext:"}}" ext:html | ext:php | ext:asp`,
+    ],
+    icon: <Code className="h-4 w-4" />,
+    description: "Parámetros y extensiones susceptibles a inyección de plantillas — Jinja2, Twig, Velocity, Freemarker",
+    color: "bg-orange-500/10 text-orange-600 border-orange-500/20",
+    group: "Web Vulns"
+  },
+  // ── CRLF Injection ────────────────────────────────────────────────────────
+  {
+    title: "CRLF Injection",
+    dorks: [
+      `site:{domain} inurl:"?redirect=" | inurl:"?next=" | inurl:"?url="`,
+      `site:{domain} inurl:"?location=" | inurl:"?dest=" | inurl:"?goto="`,
+      `site:{domain} inurl:"?header=" | inurl:"?response=" | inurl:"?set-cookie="`,
+      `site:{domain} inurl:"?callback=" | inurl:"?jsonp=" | inurl:"?ref="`,
+      `site:{domain} inurl:"/redirect?" | inurl:"/forward?"`,
+      `site:{domain} inurl:"?newline=" | inurl:"?line=" | inurl:"?cr=" | inurl:"?lf="`,
+      `site:{domain} inurl:"?return_url=" | inurl:"?returnUrl=" | inurl:"?return_to="`,
+    ],
+    icon: <AlertTriangle className="h-4 w-4" />,
+    description: "Parámetros de redirección y respuesta HTTP vulnerables a inyección CRLF",
+    color: "bg-yellow-500/10 text-yellow-600 border-yellow-500/20",
+    group: "Web Vulns"
+  },
+  // ── Host Header Injection ─────────────────────────────────────────────────
+  {
+    title: "Host Header Injection",
+    dorks: [
+      `site:{domain} inurl:"/reset-password"`,
+      `site:{domain} inurl:"/forgot-password"`,
+      `site:{domain} inurl:"/admin" inurl:"?host="`,
+      `site:{domain} intext:"X-Forwarded-Host" | intext:"X-Original-URL" | intext:"X-Rewrite-URL"`,
+      `site:{domain} intext:"X-Host:" | intext:"Forwarded:" | intext:"Via:"`,
+      `site:{domain} inurl:"/cache" | inurl:"/cdn-cgi/" | inurl:"/proxy/"`,
+      `site:{domain} inurl:"?X-Forwarded-For=" | inurl:"?X-Real-IP="`,
+      `site:{domain} intitle:"password reset" | intitle:"forgot password"`,
+    ],
+    icon: <Globe className="h-4 w-4" />,
+    description: "Endpoints vulnerables a manipulación del header Host — password reset poisoning, cache poisoning",
+    color: "bg-purple-500/10 text-purple-600 border-purple-500/20",
+    group: "Web Vulns"
+  },
+  // ── XXE Injection ─────────────────────────────────────────────────────────
+  {
+    title: "XXE — XML Injection",
+    dorks: [
+      `site:{domain} ext:xml | ext:wsdl | ext:xsd`,
+      `site:{domain} inurl:"/soap" | inurl:"/ws" | inurl:"/wsdl"`,
+      `site:{domain} inurl:"?xml=" | inurl:"?xmlData=" | inurl:"?body="`,
+      `site:{domain} inurl:"/xmlrpc" | inurl:"/xmlrpc.php"`,
+      `site:{domain} inurl:"/api/xml" | inurl:"/rest/xml" | inurl:"/service/xml"`,
+      `site:{domain} intext:"<?xml" intext:"DOCTYPE"`,
+      `site:{domain} intext:"SOAP" inurl:"/service" | inurl:"/services"`,
+      `site:{domain} filetype:wsdl | filetype:xsd`,
+      `site:{domain} inurl:"/upload" ext:xml | ext:svg`,
+      `site:{domain} intitle:"SOAP" | intitle:"WSDL"`,
+    ],
+    icon: <Code className="h-4 w-4" />,
+    description: "Endpoints XML, SOAP/WSDL y parámetros XML — vectores de XXE para lectura de archivos e SSRF",
+    color: "bg-red-500/10 text-red-600 border-red-500/20",
+    group: "Web Vulns"
+  },
+  // ── NoSQL Injection ───────────────────────────────────────────────────────
+  {
+    title: "NoSQL Injection",
+    dorks: [
+      `site:{domain} inurl:"?filter=" | inurl:"?query=" | inurl:"?search="`,
+      `site:{domain} inurl:"?where=" | inurl:"?find=" | inurl:"?match="`,
+      `site:{domain} inurl:"?$gt=" | inurl:"?$lt=" | inurl:"?$ne="`,
+      `site:{domain} inurl:"/api" inurl:"?sort=" | inurl:"?order="`,
+      `site:{domain} intext:"mongodb" | intext:"mongoose" | intext:"CastError"`,
+      `site:{domain} intext:"MongoError" | intext:"BSONTypeError" | intext:"Mongoose"`,
+      `site:{domain} inurl:"/api" inurl:"?populate=" | inurl:"?aggregate="`,
+      `site:{domain} intext:"$where" | intext:"$regex" | intext:"$elemMatch"`,
+    ],
+    icon: <Database className="h-4 w-4" />,
+    description: "Parámetros y errores de MongoDB/NoSQL — operadores $where, $regex, $ne para bypass de autenticación",
+    color: "bg-green-500/10 text-green-600 border-green-500/20",
+    group: "Web Vulns"
+  },
+  // ── HTTP Parameter Pollution ──────────────────────────────────────────────
+  {
+    title: "HTTP Parameter Pollution (HPP)",
+    dorks: [
+      `site:{domain} inurl:"?id=*&id=" | inurl:"?user=*&user="`,
+      `site:{domain} inurl:"?role=" | inurl:"?access=" | inurl:"?privilege="`,
+      `site:{domain} inurl:"?admin=" | inurl:"?is_admin=" | inurl:"?isAdmin="`,
+      `site:{domain} inurl:"?price=" | inurl:"?amount=" | inurl:"?total="`,
+      `site:{domain} inurl:"?status=" | inurl:"?state=" | inurl:"?type="`,
+      `site:{domain} inurl:"?action=*&action=" | inurl:"?method=*&method="`,
+      `site:{domain} inurl:"?callback=*&callback=" | inurl:"?next=*&next="`,
+    ],
+    icon: <Zap className="h-4 w-4" />,
+    description: "Parámetros duplicados y de control — HTTP Parameter Pollution para bypass de validaciones",
+    color: "bg-yellow-500/10 text-yellow-600 border-yellow-500/20",
+    group: "Web Vulns"
+  },
+  // ── Prototype Pollution ───────────────────────────────────────────────────
+  {
+    title: "Prototype Pollution",
+    dorks: [
+      `site:{domain} inurl:"?__proto__=" | inurl:"?constructor=" | inurl:"?prototype="`,
+      `site:{domain} inurl:"?__proto__[" | inurl:"?constructor[" | inurl:"?__proto__."`,
+      `site:{domain} inurl:"?merge=" | inurl:"?extend=" | inurl:"?clone="`,
+      `site:{domain} inurl:"?deep=" | inurl:"?recursive=" | inurl:"?assign="`,
+      `site:{domain} ext:js intext:"Object.assign" | intext:"_.merge" | intext:"$.extend"`,
+      `site:{domain} ext:js intext:"__proto__" | intext:"prototype"`,
+    ],
+    icon: <Bug className="h-4 w-4" />,
+    description: "Parámetros y librerías JavaScript vulnerables a prototype pollution — __proto__, constructor",
+    color: "bg-indigo-500/10 text-indigo-600 border-indigo-500/20",
+    group: "Web Vulns"
+  },
+  // ── Business Logic ────────────────────────────────────────────────────────
+  {
+    title: "Business Logic Flaws",
+    dorks: [
+      `site:{domain} inurl:"?price=" | inurl:"?amount=" | inurl:"?quantity="`,
+      `site:{domain} inurl:"?discount=" | inurl:"?coupon=" | inurl:"?promo="`,
+      `site:{domain} inurl:"?voucher=" | inurl:"?code=" | inurl:"?gift_card="`,
+      `site:{domain} inurl:"?balance=" | inurl:"?credit=" | inurl:"?points="`,
+      `site:{domain} inurl:"/checkout" | inurl:"/payment" | inurl:"/order"`,
+      `site:{domain} inurl:"?step=" | inurl:"?wizard=" | inurl:"?stage="`,
+      `site:{domain} inurl:"?skip=" | inurl:"?bypass=" | inurl:"?override="`,
+      `site:{domain} inurl:"?plan=" | inurl:"?tier=" | inurl:"?subscription="`,
+      `site:{domain} inurl:"/apply_coupon" | inurl:"/apply_discount" | inurl:"/redeem"`,
+      `site:{domain} inurl:"?referral=" | inurl:"?ref_code=" | inurl:"?affiliate="`,
+    ],
+    icon: <Target className="h-4 w-4" />,
+    description: "Parámetros de negocio — precios, descuentos, cupones, flujos de pago vulnerables a lógica rota",
+    color: "bg-green-500/10 text-green-600 border-green-500/20",
+    group: "Web Vulns"
+  },
+  // ── JWT Exposure ──────────────────────────────────────────────────────────
+  {
+    title: "JWT Token Exposure",
+    dorks: [
+      `site:{domain} inurl:"?token=eyJ" | inurl:"?jwt=eyJ" | inurl:"?access_token=eyJ"`,
+      `site:{domain} inurl:"?auth=eyJ" | inurl:"?bearer=eyJ" | inurl:"?id_token=eyJ"`,
+      `site:{domain} ext:js intext:"eyJhbGciOiJ"`,
+      `site:{domain} intext:"Authorization: Bearer eyJ"`,
+      `site:{domain} inurl:"/api" inurl:"?token=eyJ"`,
+      `site:{domain} filetype:log intext:"eyJhbGciOiJ"`,
+      `site:{domain} intext:"alg.*none" | intext:'"alg":"none"'`,
+      `site:{domain} intext:"HS256" | intext:"RS256" ext:js`,
+    ],
+    icon: <Key className="h-4 w-4" />,
+    description: "JWTs expuestos en URLs, logs y JavaScript — alg:none, weak secrets, token leakage",
+    color: "bg-yellow-500/10 text-yellow-600 border-yellow-500/20",
+    group: "Credenciales"
+  },
+  // ── JavaScript Secrets ────────────────────────────────────────────────────
+  {
+    title: "Secrets in JavaScript Files",
+    dorks: [
+      `site:{domain} ext:js intext:"api_key" | intext:"apikey" | intext:"api-key"`,
+      `site:{domain} ext:js intext:"secret_key" | intext:"secretKey" | intext:"SECRET"`,
+      `site:{domain} ext:js intext:"access_token" | intext:"accessToken" | intext:"bearer"`,
+      `site:{domain} ext:js intext:"password" | intext:"passwd" | intext:"pwd"`,
+      `site:{domain} ext:js intext:"aws_access_key_id" | intext:"AWS_ACCESS_KEY"`,
+      `site:{domain} ext:js intext:"firebase" intext:"apiKey"`,
+      `site:{domain} ext:js intext:"stripe" intext:"pk_live_" | intext:"sk_live_"`,
+      `site:{domain} ext:js intext:"twilio" | intext:"sendgrid" | intext:"mailgun"`,
+      `site:{domain} ext:js intext:"google_api_key" | intext:"GOOGLE_API_KEY"`,
+      `site:{domain} ext:js intext:"privateKey" | intext:"private_key" | intext:"rsa"`,
+      `site:{domain} ext:js intext:"client_secret" | intext:"clientSecret"`,
+      `site:{domain} ext:js intext:"REACT_APP_" | intext:"VUE_APP_" | intext:"NEXT_PUBLIC_"`,
+      `site:{domain} ext:js intext:"slack_token" | intext:"xoxb-" | intext:"xoxp-"`,
+    ],
+    icon: <Key className="h-4 w-4" />,
+    description: "Secretos hardcodeados en archivos .js — API keys, tokens, passwords en frontend y bundles",
+    color: "bg-red-500/10 text-red-600 border-red-500/20",
+    group: "Credenciales"
+  },
+  // ── Password in URL ───────────────────────────────────────────────────────
+  {
+    title: "Passwords & Tokens in URLs",
+    dorks: [
+      `site:{domain} inurl:"?password=" | inurl:"?passwd=" | inurl:"?pass="`,
+      `site:{domain} inurl:"?secret=" | inurl:"?key=" | inurl:"?api_key="`,
+      `site:{domain} inurl:"?access_token=" | inurl:"?auth_token=" | inurl:"?session="`,
+      `site:{domain} inurl:"?private_key=" | inurl:"?client_secret=" | inurl:"?oauth_token="`,
+      `site:{domain} inurl:"https://*:*@"`,
+      `site:{domain} filetype:log intext:"password=" | intext:"passwd="`,
+      `site:{domain} filetype:log intext:"token=" | intext:"secret="`,
+      `site:{domain} inurl:"?credentials=" | inurl:"?basic_auth="`,
+    ],
+    icon: <Eye className="h-4 w-4" />,
+    description: "Credenciales y tokens transmitidos en parámetros GET — credenciales indexadas en Google",
+    color: "bg-red-500/10 text-red-600 border-red-500/20",
+    group: "Credenciales"
+  },
+  // ── Subdomain Takeover ────────────────────────────────────────────────────
+  {
+    title: "Subdomain Takeover Candidates",
+    dorks: [
+      `site:{domain} intext:"There is no app configured at that hostname"`,
+      `site:{domain} intext:"No such app" intext:"Heroku"`,
+      `site:{domain} intext:"The requested URL was not found on this server"`,
+      `site:{domain} intext:"Repository not found" intext:"GitHub Pages"`,
+      `site:{domain} intext:"NoSuchBucket" | intext:"The specified bucket does not exist"`,
+      `site:{domain} intext:"Fastly error: unknown domain:"`,
+      `site:{domain} intext:"This UserVoice subdomain is currently available"`,
+      `site:{domain} intext:"The thing you were looking for is no longer here"`,
+      `site:{domain} intext:"azure" intext:"This web app has been stopped"`,
+      `site:{domain} intext:"sendgrid.net" | intext:"ghost.io" | intext:"cargo.site"`,
+      `site:{domain} intext:"is not a registered InVision domain"`,
+      `site:{domain} intext:"Do you want to register"`,
+    ],
+    icon: <Globe className="h-4 w-4" />,
+    description: "Subdominios con CNAME apuntando a servicios no reclamados — Heroku, GitHub Pages, S3, Azure",
+    color: "bg-orange-500/10 text-orange-600 border-orange-500/20",
+    group: "Recon"
+  },
+  // ── phpinfo / server-status ───────────────────────────────────────────────
+  {
+    title: "phpinfo & Server Disclosure",
+    dorks: [
+      `site:{domain} ext:php intitle:"phpinfo()" | intext:"PHP Version"`,
+      `site:{domain} inurl:"/phpinfo.php" | inurl:"/info.php" | inurl:"/php_info.php"`,
+      `site:{domain} inurl:"/server-status" intitle:"Apache Status"`,
+      `site:{domain} inurl:"/server-info" intitle:"Apache Server Information"`,
+      `site:{domain} inurl:"/_profiler" | inurl:"/_wdt" intitle:"Symfony"`,
+      `site:{domain} inurl:"/telescope" intitle:"Laravel Telescope"`,
+      `site:{domain} inurl:"/horizon" intitle:"Laravel Horizon"`,
+      `site:{domain} inurl:"/debugbar" | inurl:"?XDEBUG_SESSION_START"`,
+      `site:{domain} intext:"X-Powered-By: PHP" | intext:"X-Generator:"`,
+      `site:{domain} inurl:"/test.php" | inurl:"/test.asp" | inurl:"/test.jsp"`,
+      `site:{domain} inurl:"/trace.axd" | inurl:"/elmah.axd"`,
+    ],
+    icon: <AlertTriangle className="h-4 w-4" />,
+    description: "phpinfo(), Apache server-status, Laravel Telescope — exposición de configuración interna del servidor",
+    color: "bg-red-500/10 text-red-600 border-red-500/20",
+    group: "Recon"
+  },
+  // ── Technology Fingerprinting ─────────────────────────────────────────────
+  {
+    title: "Technology Fingerprinting",
+    dorks: [
+      `site:{domain} intext:"Powered by WordPress" | intext:"Powered by Joomla"`,
+      `site:{domain} intext:"Powered by Laravel" | intext:"Powered by Django"`,
+      `site:{domain} intext:"Powered by Ruby on Rails" | intext:"Powered by Express"`,
+      `site:{domain} intext:"ASP.NET" | intext:"ASP.NET MVC" | intext:"ASP.NET Core"`,
+      `site:{domain} intext:"Spring Framework" | intext:"Spring Boot"`,
+      `site:{domain} intext:"Struts" | intext:"Apache Struts"`,
+      `site:{domain} inurl:"/wp-json" | inurl:"/wp-admin" | inurl:"/wp-content"`,
+      `site:{domain} inurl:"/.well-known/security.txt"`,
+      `site:{domain} inurl:"/robots.txt"`,
+      `site:{domain} inurl:"/sitemap.xml" | inurl:"/sitemap_index.xml"`,
+      `site:{domain} intext:"Generator" intext:"WordPress" | intext:"Drupal" | intext:"Joomla"`,
+      `site:{domain} inurl:"/crossdomain.xml" | inurl:"/clientaccesspolicy.xml"`,
+    ],
+    icon: <Search className="h-4 w-4" />,
+    description: "Identificar stack tecnológico — CMS, frameworks, versiones expuestas para buscar CVEs específicos",
+    color: "bg-blue-500/10 text-blue-600 border-blue-500/20",
+    group: "Recon"
+  },
+  // ── WSDL/SOAP Endpoints ───────────────────────────────────────────────────
+  {
+    title: "SOAP / WSDL Endpoints",
+    dorks: [
+      `site:{domain} inurl:"?wsdl" | inurl:"?WSDL"`,
+      `site:{domain} inurl:".wsdl" | inurl:".asmx?wsdl"`,
+      `site:{domain} inurl:"/soap" | inurl:"/ws/" | inurl:"/services/"`,
+      `site:{domain} inurl:"/Service.asmx" | inurl:"/WebService.asmx"`,
+      `site:{domain} inurl:"/axis/" | inurl:"/axis2/" | inurl:"/jws"`,
+      `site:{domain} intitle:"SOAP WebService" | intitle:"Web Service"`,
+      `site:{domain} ext:asmx | ext:wsdl`,
+      `site:{domain} inurl:"?disco" | inurl:".disco"`,
+      `site:{domain} inurl:"/wcf/" | inurl:"/svc"`,
+    ],
+    icon: <Terminal className="h-4 w-4" />,
+    description: "Servicios SOAP y endpoints WSDL — attack surface para XXE, injection y enumeración de métodos",
+    color: "bg-teal-500/10 text-teal-600 border-teal-500/20",
+    group: "Recon"
+  },
+  // ── Joomla CMS ────────────────────────────────────────────────────────────
+  {
+    title: "Joomla CMS",
+    dorks: [
+      `site:{domain} inurl:"/administrator" intitle:"Joomla"`,
+      `site:{domain} inurl:"/index.php?option=com_"`,
+      `site:{domain} inurl:"/index.php?option=com_users"`,
+      `site:{domain} inurl:"/index.php?option=com_content"`,
+      `site:{domain} inurl:"/index.php?option=com_config"`,
+      `site:{domain} inurl:"/index.php?option=com_admin"`,
+      `site:{domain} inurl:"/components/com_" | inurl:"/modules/mod_"`,
+      `site:{domain} inurl:"/plugins/system/" | inurl:"/templates/"`,
+      `site:{domain} intext:"Joomla! Debug Console"`,
+      `site:{domain} inurl:"/configuration.php" | inurl:"/joomla.conf"`,
+      `site:{domain} intitle:"Joomla" inurl:"/api/index.php"`,
+      `site:{domain} inurl:"/media/jui/" | inurl:"/libraries/joomla/"`,
+    ],
+    icon: <Globe className="h-4 w-4" />,
+    description: "Enumeración Joomla — panel admin, componentes, configuración y rutas internas",
+    color: "bg-orange-500/10 text-orange-600 border-orange-500/20",
+    group: "CMS"
+  },
+  // ── Drupal CMS ────────────────────────────────────────────────────────────
+  {
+    title: "Drupal CMS",
+    dorks: [
+      `site:{domain} inurl:"/user/login" intitle:"Drupal"`,
+      `site:{domain} inurl:"/admin/reports" | inurl:"/admin/structure"`,
+      `site:{domain} inurl:"/node/add" | inurl:"/admin/content"`,
+      `site:{domain} inurl:"/sites/default/files/" | inurl:"/sites/all/modules/"`,
+      `site:{domain} inurl:"/drupal/update.php" | inurl:"/update.php?op=info"`,
+      `site:{domain} inurl:"/CHANGELOG.txt" intext:"Drupal"`,
+      `site:{domain} inurl:"/core/CHANGELOG.txt" | inurl:"/core/install.php"`,
+      `site:{domain} inurl:"/?q=node/" | inurl:"/?q=user/"`,
+      `site:{domain} intext:"Powered by Drupal" | intext:"drupal.org"`,
+      `site:{domain} inurl:"/sites/default/settings.php"`,
+      `site:{domain} ext:php inurl:"/modules/" intext:"Drupal"`,
+    ],
+    icon: <Globe className="h-4 w-4" />,
+    description: "Enumeración Drupal — admin, módulos, archivos de configuración y rutas críticas (Drupalgeddon)",
+    color: "bg-blue-500/10 text-blue-600 border-blue-500/20",
+    group: "CMS"
+  },
+  // ── Magento ───────────────────────────────────────────────────────────────
+  {
+    title: "Magento E-Commerce",
+    dorks: [
+      `site:{domain} inurl:"/admin" intitle:"Magento"`,
+      `site:{domain} inurl:"/index.php/admin" | inurl:"/index.php/adminhtml"`,
+      `site:{domain} inurl:"/app/etc/local.xml" | inurl:"/app/etc/env.php"`,
+      `site:{domain} inurl:"/downloader/" intitle:"Magento"`,
+      `site:{domain} inurl:"/skin/adminhtml/" | inurl:"/js/mage/"`,
+      `site:{domain} inurl:"/rest/V1/" | inurl:"/rest/default/V1/"`,
+      `site:{domain} inurl:"/api/rest/" intitle:"Magento"`,
+      `site:{domain} intext:"Magento" inurl:"/catalog/product/"`,
+      `site:{domain} inurl:"/magento/admin" | inurl:"/mage/"`,
+      `site:{domain} inurl:"/downloader/index.php" intext:"Magento"`,
+    ],
+    icon: <ShoppingBag className="h-4 w-4" />,
+    description: "Enumeración Magento — panel admin, REST API, configuración local.xml con credenciales de BD",
+    color: "bg-orange-500/10 text-orange-600 border-orange-500/20",
+    group: "CMS"
+  },
+  // ── SharePoint ────────────────────────────────────────────────────────────
+  {
+    title: "SharePoint / Microsoft 365",
+    dorks: [
+      `site:{domain} inurl:"/_layouts/15/login.aspx"`,
+      `site:{domain} inurl:"/_layouts/15/viewlsts.aspx"`,
+      `site:{domain} inurl:"/_api/web" | inurl:"/_api/lists"`,
+      `site:{domain} inurl:"/sites/" inurl:"/_layouts/"`,
+      `site:{domain} inurl:"/_vti_bin/" | inurl:"/_vti_pvt/"`,
+      `site:{domain} inurl:"/Shared Documents/" intitle:"SharePoint"`,
+      `site:{domain} inurl:"/_catalogs/masterpage/" | inurl:"/_layouts/images/"`,
+      `site:{domain} intitle:"SharePoint" inurl:"/Pages/default.aspx"`,
+      `site:{domain} inurl:"/_api/contextinfo" | inurl:"/_api/web/currentuser"`,
+      `site:{domain} inurl:"/Lists/" | inurl:"/SitePages/"`,
+      `site:{domain} intext:"sharepoint.com" | intext:"SharePoint 2016" | intext:"SharePoint 2019"`,
+    ],
+    icon: <Globe className="h-4 w-4" />,
+    description: "SharePoint — API REST, listas, documentos compartidos, layouts y endpoints de autenticación",
+    color: "bg-blue-500/10 text-blue-600 border-blue-500/20",
+    group: "CMS"
+  },
+  // ── Salesforce ────────────────────────────────────────────────────────────
+  {
+    title: "Salesforce Exposure",
+    dorks: [
+      `site:{domain} inurl:"/lightning/r/" | inurl:"/lightning/n/"`,
+      `site:{domain} inurl:"/apex/" | inurl:"/visualforce/"`,
+      `site:{domain} inurl:"/services/data/v" | inurl:"/services/apexrest/"`,
+      `site:{domain} inurl:"/servlet/servlet.WebToCase" | inurl:"/servlet/servlet.WebToLead"`,
+      `site:{domain} intext:"00D" intext:"salesforce" inurl:"/apex/"`,
+      `site:{domain} inurl:"/s/sfsites/" | inurl:"/sfsites/auraFW/"`,
+      `site:{domain} intitle:"Salesforce" inurl:"/login"`,
+      `site:{domain} inurl:"/aura?r=" | inurl:"/s/sfsites/auraFW/"`,
+    ],
+    icon: <Cloud className="h-4 w-4" />,
+    description: "Salesforce community/Experience Cloud — APIs REST, Aura/LWC, datos de usuarios expuestos",
+    color: "bg-cyan-500/10 text-cyan-600 border-cyan-500/20",
+    group: "CMS"
+  },
+  // ── Log4Shell / RCE CVEs ──────────────────────────────────────────────────
+  {
+    title: "Log4Shell & CVE Indicators",
+    dorks: [
+      `site:{domain} intext:"log4j" | intext:"log4j2" | intext:"log4j-core"`,
+      `site:{domain} inurl:"/jndi:" | intext:"\${jndi:" ext:log`,
+      `site:{domain} inurl:"struts2" | inurl:"struts" ext:action`,
+      `site:{domain} inurl:".do" | inurl:".action" intitle:"Apache Struts"`,
+      `site:{domain} inurl:"/cgi-bin/" | inurl:"/cgi/" ext:cgi | ext:sh`,
+      `site:{domain} inurl:"shellshock" | intext:"() { :;}"`,
+      `site:{domain} inurl:"/axis2-admin/" | inurl:"/axis2/services"`,
+      `site:{domain} inurl:"/manager/html" intext:"Apache Tomcat"`,
+      `site:{domain} intext:"CVE-" intext:"exploit" | intext:"vulnerable"`,
+      `site:{domain} inurl:"/invoker/readonly" | inurl:"/jmx-console/"`,
+      `site:{domain} inurl:"/console" intitle:"JBoss"`,
+      `site:{domain} inurl:"/weblogic" | intitle:"WebLogic Server"`,
+    ],
+    icon: <Bug className="h-4 w-4" />,
+    description: "Indicadores de Log4Shell, Apache Struts, JBoss, WebLogic — vectores de RCE conocidos",
+    color: "bg-red-500/10 text-red-600 border-red-500/20",
+    group: "CVE / Exploits"
+  },
+  // ── Exposed Source Code ───────────────────────────────────────────────────
+  {
+    title: "Exposed Source Code & Backups",
+    dorks: [
+      `site:{domain} ext:php~ | ext:php.bak | ext:php.old | ext:php.orig`,
+      `site:{domain} ext:asp~ | ext:asp.bak | ext:aspx.bak`,
+      `site:{domain} ext:jsp~ | ext:jsp.bak | ext:java.bak`,
+      `site:{domain} inurl:"/.git/" intitle:"Index of"`,
+      `site:{domain} inurl:"/.svn/" intitle:"Index of"`,
+      `site:{domain} inurl:"/.hg/" | inurl:"/.bzr/"`,
+      `site:{domain} inurl:"/.DS_Store"`,
+      `site:{domain} inurl:"/WEB-INF/" intitle:"Index of"`,
+      `site:{domain} inurl:"/.env" | inurl:"/.env.local" | inurl:"/.env.prod"`,
+      `site:{domain} inurl:"/composer.json" | inurl:"/composer.lock"`,
+      `site:{domain} inurl:"/package.json" | inurl:"/yarn.lock" | inurl:"/package-lock.json"`,
+      `site:{domain} inurl:"/Gemfile" | inurl:"/Gemfile.lock"`,
+      `site:{domain} inurl:"/requirements.txt" | inurl:"/Pipfile"`,
+      `site:{domain} inurl:"/Dockerfile" | inurl:"/docker-compose.yml"`,
+    ],
+    icon: <FileText className="h-4 w-4" />,
+    description: "Código fuente expuesto — .git, .svn, .env, backups .bak, Dockerfile, manifests de dependencias",
+    color: "bg-red-500/10 text-red-600 border-red-500/20",
+    group: "Archivos"
+  },
+  // ── AWS / Cloud Metadata SSRF ─────────────────────────────────────────────
+  {
+    title: "Cloud Metadata & SSRF Targets",
+    dorks: [
+      `site:{domain} inurl:"?url=http://169.254.169.254"`,
+      `site:{domain} inurl:"?dest=http://metadata.google.internal"`,
+      `site:{domain} inurl:"?proxy=" | inurl:"?fetch=" | inurl:"?load="`,
+      `site:{domain} inurl:"?image_url=" | inurl:"?img_url=" | inurl:"?avatar_url="`,
+      `site:{domain} inurl:"?webhook=" | inurl:"?callback_url=" | inurl:"?notify_url="`,
+      `site:{domain} inurl:"?import_url=" | inurl:"?file_url=" | inurl:"?feed="`,
+      `site:{domain} inurl:"?pdf_url=" | inurl:"?export=" | inurl:"?download_url="`,
+      `site:{domain} inurl:"?wkhtmltopdf=" | inurl:"?render_url="`,
+      `site:{domain} intext:"169.254.169.254" | intext:"metadata.google.internal"`,
+      `site:{domain} intext:"iam/security-credentials" | intext:"latest/meta-data"`,
+    ],
+    icon: <Shield className="h-4 w-4" />,
+    description: "Parámetros SSRF que permiten acceder a metadata AWS/GCP/Azure — cloud credential theft",
+    color: "bg-purple-500/10 text-purple-600 border-purple-500/20",
+    group: "Cloud"
+  },
+  // ── Open APIs & Swagger ───────────────────────────────────────────────────
+  {
+    title: "Open API / Swagger Exposed",
+    dorks: [
+      `site:{domain} inurl:"/swagger-ui.html" | inurl:"/swagger-ui/"`,
+      `site:{domain} inurl:"/api-docs" | inurl:"/openapi.json" | inurl:"/openapi.yaml"`,
+      `site:{domain} inurl:"/swagger.json" | inurl:"/swagger.yaml"`,
+      `site:{domain} intitle:"Swagger UI" | intitle:"ReDoc"`,
+      `site:{domain} inurl:"/v2/api-docs" | inurl:"/v3/api-docs"`,
+      `site:{domain} inurl:"/api/swagger" | inurl:"/docs/swagger"`,
+      `site:{domain} inurl:"/.well-known/openapi"`,
+      `site:{domain} intext:"swagger" intext:"\"paths\":" ext:json`,
+      `site:{domain} inurl:"/postman" | inurl:"/postman.json"`,
+      `site:{domain} inurl:"/insomnia" | inurl:"/collection.json"`,
+    ],
+    icon: <Terminal className="h-4 w-4" />,
+    description: "Swagger UI, OpenAPI, Postman collections expuestos — enumeración completa de endpoints y parámetros",
+    color: "bg-green-500/10 text-green-600 border-green-500/20",
+    group: "Recon"
+  },
+  // ── Email Security ────────────────────────────────────────────────────────
+  {
+    title: "Email Security & SMTP Exposure",
+    dorks: [
+      `site:{domain} inurl:"/mail/" | inurl:"/webmail/" | inurl:"/roundcube/"`,
+      `site:{domain} inurl:"/owa/" | inurl:"/exchange/" intitle:"Outlook"`,
+      `site:{domain} inurl:"/zimbra/" | inurl:"/horde/" | inurl:"/squirrelmail/"`,
+      `site:{domain} inurl:"/autodiscover/" | inurl:"/autodiscover.xml"`,
+      `site:{domain} inurl:"/mapi/" | inurl:"/EWS/" | inurl:"/EWS/Exchange.asmx"`,
+      `site:{domain} intext:"smtp" intext:"password" filetype:txt | filetype:log`,
+      `site:{domain} intext:"mail server" intext:"credentials" filetype:xml`,
+      `site:{domain} inurl:"/phpmyadmin" intext:"mail"`,
+      `site:{domain} ext:conf intext:"smtp_password" | intext:"mail_password"`,
+    ],
+    icon: <Mail className="h-4 w-4" />,
+    description: "Webmail, OWA, Zimbra expuestos — SMTP credentials, Exchange EWS, autodiscover para email takeover",
+    color: "bg-blue-500/10 text-blue-600 border-blue-500/20",
+    group: "Infraestructura"
+  },
+  // ── Insecure Deserialization ───────────────────────────────────────────────
+  {
+    title: "Deserialization Endpoints",
+    dorks: [
+      `site:{domain} inurl:"/deserialize" | inurl:"/readObject"`,
+      `site:{domain} ext:java intext:"ObjectInputStream" | intext:"readObject"`,
+      `site:{domain} inurl:"/remoting/" | inurl:"/rmi/" | inurl:"/jndi/"`,
+      `site:{domain} intext:"java.io.Serializable" | intext:"serialVersionUID"`,
+      `site:{domain} inurl:"?viewstate=" | inurl:"?__VIEWSTATE="`,
+      `site:{domain} intext:"__VIEWSTATE" | intext:"VIEWSTATEGENERATOR"`,
+      `site:{domain} inurl:"/pickle" | inurl:"/marshal"`,
+      `site:{domain} ext:php intext:"unserialize" | intext:"serialize"`,
+      `site:{domain} inurl:"/java-serialized" | inurl:"/binary-data"`,
+    ],
+    icon: <Terminal className="h-4 w-4" />,
+    description: "Endpoints de deserialización Java/.NET/PHP — Java RMI, VIEWSTATE, pickle, PHP unserialize",
+    color: "bg-red-500/10 text-red-600 border-red-500/20",
+    group: "Web Vulns"
+  },
+  // ── Race Conditions ───────────────────────────────────────────────────────
+  {
+    title: "Race Condition Candidates",
+    dorks: [
+      `site:{domain} inurl:"/transfer" | inurl:"/withdraw" | inurl:"/deposit"`,
+      `site:{domain} inurl:"/vote" | inurl:"/like" | inurl:"/upvote"`,
+      `site:{domain} inurl:"/redeem" | inurl:"/claim" | inurl:"/use_coupon"`,
+      `site:{domain} inurl:"/invite" | inurl:"/referral" | inurl:"/reward"`,
+      `site:{domain} inurl:"/purchase" | inurl:"/buy" | inurl:"/order"`,
+      `site:{domain} inurl:"/follow" | inurl:"/subscribe" | inurl:"/enroll"`,
+      `site:{domain} inurl:"/generate_token" | inurl:"/create_session"`,
+      `site:{domain} inurl:"/api/v" inurl:"/limit" | inurl:"/rate"`,
+    ],
+    icon: <Zap className="h-4 w-4" />,
+    description: "Operaciones susceptibles a race conditions — transferencias, votos, cupones, rewards",
+    color: "bg-yellow-500/10 text-yellow-600 border-yellow-500/20",
+    group: "Web Vulns"
+  },
+  // ── Cache Poisoning ───────────────────────────────────────────────────────
+  {
+    title: "Cache Poisoning",
+    dorks: [
+      `site:{domain} inurl:"/cdn-cgi/" | inurl:"/cache/"`,
+      `site:{domain} intext:"Age:" | intext:"X-Cache:" | intext:"CF-Cache-Status:"`,
+      `site:{domain} inurl:"?utm_source=" | inurl:"?fbclid=" | inurl:"?gclid="`,
+      `site:{domain} intext:"Vary: Accept-Encoding" | intext:"Cache-Control: public"`,
+      `site:{domain} inurl:"/api/v1" intext:"X-Cache-Key" | intext:"X-Cache-Hit"`,
+      `site:{domain} inurl:"?cb=" | inurl:"?cachebuster=" | inurl:"?nocache="`,
+      `site:{domain} intext:"Via: 1.1 varnish" | intext:"Via: 1.1 cloudflare"`,
+    ],
+    icon: <Shield className="h-4 w-4" />,
+    description: "Indicadores de caché CDN — unkeyed inputs, parámetros no cacheados para cache poisoning/deception",
+    color: "bg-indigo-500/10 text-indigo-600 border-indigo-500/20",
+    group: "Web Vulns"
+  },
+  // ── Sensitive Internal Data ───────────────────────────────────────────────
+  {
+    title: "Internal Network Disclosure",
+    dorks: [
+      `site:{domain} intext:"192.168." | intext:"10.0." | intext:"172.16."`,
+      `site:{domain} intext:"internal" intext:"192.168" filetype:xml | filetype:json`,
+      `site:{domain} intext:"localhost" intext:"password" filetype:conf | filetype:log`,
+      `site:{domain} intext:"internal-only" | intext:"for internal use"`,
+      `site:{domain} filetype:xml intext:"<host>192.168" | intext:"<server>10."`,
+      `site:{domain} intext:"private key" | intext:"BEGIN RSA PRIVATE KEY"`,
+      `site:{domain} intext:"BEGIN CERTIFICATE" | intext:"BEGIN PRIVATE KEY"`,
+      `site:{domain} intext:"-----BEGIN" intext:"-----END"`,
+    ],
+    icon: <Eye className="h-4 w-4" />,
+    description: "IPs internas, redes RFC1918, claves privadas y certificados expuestos en páginas o archivos indexados",
+    color: "bg-red-500/10 text-red-600 border-red-500/20",
+    group: "Recon"
+  },
+]
+
+const COUNTRY_TLDS: { region: string; tlds: { tld: string; label: string }[] }[] = [
+  {
+    region: "República Dominicana",
+    tlds: [
+      { tld: ".do", label: ".do" },
+      { tld: ".com.do", label: ".com.do" },
+      { tld: ".net.do", label: ".net.do" },
+      { tld: ".org.do", label: ".org.do" },
+      { tld: ".edu.do", label: ".edu.do" },
+      { tld: ".gov.do", label: ".gov.do" },
+      { tld: ".gob.do", label: ".gob.do" },
+      { tld: ".mil.do", label: ".mil.do" },
+      { tld: ".web.do", label: ".web.do" },
+      { tld: ".sld.do", label: ".sld.do" },
+    ],
+  },
+  {
+    region: "México",
+    tlds: [
+      { tld: ".mx", label: ".mx" },
+      { tld: ".com.mx", label: ".com.mx" },
+      { tld: ".net.mx", label: ".net.mx" },
+      { tld: ".org.mx", label: ".org.mx" },
+      { tld: ".edu.mx", label: ".edu.mx" },
+      { tld: ".gob.mx", label: ".gob.mx" },
+      { tld: ".mil.mx", label: ".mil.mx" },
+    ],
+  },
+  {
+    region: "Argentina",
+    tlds: [
+      { tld: ".ar", label: ".ar" },
+      { tld: ".com.ar", label: ".com.ar" },
+      { tld: ".net.ar", label: ".net.ar" },
+      { tld: ".org.ar", label: ".org.ar" },
+      { tld: ".edu.ar", label: ".edu.ar" },
+      { tld: ".gov.ar", label: ".gov.ar" },
+      { tld: ".gob.ar", label: ".gob.ar" },
+      { tld: ".mil.ar", label: ".mil.ar" },
+      { tld: ".int.ar", label: ".int.ar" },
+    ],
+  },
+  {
+    region: "Colombia",
+    tlds: [
+      { tld: ".co", label: ".co" },
+      { tld: ".com.co", label: ".com.co" },
+      { tld: ".net.co", label: ".net.co" },
+      { tld: ".org.co", label: ".org.co" },
+      { tld: ".edu.co", label: ".edu.co" },
+      { tld: ".gov.co", label: ".gov.co" },
+      { tld: ".mil.co", label: ".mil.co" },
+      { tld: ".nom.co", label: ".nom.co" },
+    ],
+  },
+  {
+    region: "Chile",
+    tlds: [
+      { tld: ".cl", label: ".cl" },
+      { tld: ".gob.cl", label: ".gob.cl" },
+      { tld: ".gov.cl", label: ".gov.cl" },
+      { tld: ".co.cl", label: ".co.cl" },
+      { tld: ".org.cl", label: ".org.cl" },
+      { tld: ".edu.cl", label: ".edu.cl" },
+      { tld: ".mil.cl", label: ".mil.cl" },
+    ],
+  },
+  {
+    region: "Brasil",
+    tlds: [
+      { tld: ".br", label: ".br" },
+      { tld: ".com.br", label: ".com.br" },
+      { tld: ".net.br", label: ".net.br" },
+      { tld: ".org.br", label: ".org.br" },
+      { tld: ".gov.br", label: ".gov.br" },
+      { tld: ".edu.br", label: ".edu.br" },
+      { tld: ".mil.br", label: ".mil.br" },
+      { tld: ".jus.br", label: ".jus.br" },
+      { tld: ".leg.br", label: ".leg.br" },
+      { tld: ".mp.br", label: ".mp.br" },
+      { tld: ".def.br", label: ".def.br" },
+      { tld: ".b.br", label: ".b.br" },
+      { tld: ".adv.br", label: ".adv.br" },
+      { tld: ".med.br", label: ".med.br" },
+      { tld: ".eng.br", label: ".eng.br" },
+      { tld: ".ind.br", label: ".ind.br" },
+      { tld: ".tv.br", label: ".tv.br" },
+      { tld: ".radio.br", label: ".radio.br" },
+    ],
+  },
+  {
+    region: "Perú",
+    tlds: [
+      { tld: ".pe", label: ".pe" },
+      { tld: ".com.pe", label: ".com.pe" },
+      { tld: ".net.pe", label: ".net.pe" },
+      { tld: ".org.pe", label: ".org.pe" },
+      { tld: ".edu.pe", label: ".edu.pe" },
+      { tld: ".gob.pe", label: ".gob.pe" },
+      { tld: ".mil.pe", label: ".mil.pe" },
+      { tld: ".nom.pe", label: ".nom.pe" },
+    ],
+  },
+  {
+    region: "Venezuela",
+    tlds: [
+      { tld: ".ve", label: ".ve" },
+      { tld: ".com.ve", label: ".com.ve" },
+      { tld: ".net.ve", label: ".net.ve" },
+      { tld: ".org.ve", label: ".org.ve" },
+      { tld: ".gob.ve", label: ".gob.ve" },
+      { tld: ".gov.ve", label: ".gov.ve" },
+      { tld: ".edu.ve", label: ".edu.ve" },
+      { tld: ".mil.ve", label: ".mil.ve" },
+      { tld: ".info.ve", label: ".info.ve" },
+      { tld: ".co.ve", label: ".co.ve" },
+      { tld: ".web.ve", label: ".web.ve" },
+      { tld: ".tec.ve", label: ".tec.ve" },
+    ],
+  },
+  {
+    region: "Ecuador",
+    tlds: [
+      { tld: ".ec", label: ".ec" },
+      { tld: ".com.ec", label: ".com.ec" },
+      { tld: ".net.ec", label: ".net.ec" },
+      { tld: ".org.ec", label: ".org.ec" },
+      { tld: ".edu.ec", label: ".edu.ec" },
+      { tld: ".gob.ec", label: ".gob.ec" },
+      { tld: ".gov.ec", label: ".gov.ec" },
+      { tld: ".mil.ec", label: ".mil.ec" },
+      { tld: ".fin.ec", label: ".fin.ec" },
+    ],
+  },
+  {
+    region: "Bolivia",
+    tlds: [
+      { tld: ".bo", label: ".bo" },
+      { tld: ".com.bo", label: ".com.bo" },
+      { tld: ".net.bo", label: ".net.bo" },
+      { tld: ".org.bo", label: ".org.bo" },
+      { tld: ".edu.bo", label: ".edu.bo" },
+      { tld: ".gob.bo", label: ".gob.bo" },
+      { tld: ".gov.bo", label: ".gov.bo" },
+      { tld: ".mil.bo", label: ".mil.bo" },
+      { tld: ".int.bo", label: ".int.bo" },
+      { tld: ".tv.bo", label: ".tv.bo" },
+    ],
+  },
+  {
+    region: "Paraguay",
+    tlds: [
+      { tld: ".py", label: ".py" },
+      { tld: ".com.py", label: ".com.py" },
+      { tld: ".net.py", label: ".net.py" },
+      { tld: ".org.py", label: ".org.py" },
+      { tld: ".edu.py", label: ".edu.py" },
+      { tld: ".gov.py", label: ".gov.py" },
+      { tld: ".mil.py", label: ".mil.py" },
+    ],
+  },
+  {
+    region: "Uruguay",
+    tlds: [
+      { tld: ".uy", label: ".uy" },
+      { tld: ".com.uy", label: ".com.uy" },
+      { tld: ".net.uy", label: ".net.uy" },
+      { tld: ".org.uy", label: ".org.uy" },
+      { tld: ".edu.uy", label: ".edu.uy" },
+      { tld: ".gub.uy", label: ".gub.uy" },
+      { tld: ".mil.uy", label: ".mil.uy" },
+    ],
+  },
+  {
+    region: "Costa Rica",
+    tlds: [
+      { tld: ".cr", label: ".cr" },
+      { tld: ".com.cr", label: ".com.cr" },
+      { tld: ".co.cr", label: ".co.cr" },
+      { tld: ".net.cr", label: ".net.cr" },
+      { tld: ".org.cr", label: ".org.cr" },
+      { tld: ".go.cr", label: ".go.cr" },
+      { tld: ".ac.cr", label: ".ac.cr" },
+      { tld: ".ed.cr", label: ".ed.cr" },
+      { tld: ".fi.cr", label: ".fi.cr" },
+      { tld: ".or.cr", label: ".or.cr" },
+    ],
+  },
+  {
+    region: "Guatemala",
+    tlds: [
+      { tld: ".gt", label: ".gt" },
+      { tld: ".com.gt", label: ".com.gt" },
+      { tld: ".net.gt", label: ".net.gt" },
+      { tld: ".org.gt", label: ".org.gt" },
+      { tld: ".edu.gt", label: ".edu.gt" },
+      { tld: ".gob.gt", label: ".gob.gt" },
+      { tld: ".mil.gt", label: ".mil.gt" },
+      { tld: ".ind.gt", label: ".ind.gt" },
+    ],
+  },
+  {
+    region: "Honduras",
+    tlds: [
+      { tld: ".hn", label: ".hn" },
+      { tld: ".com.hn", label: ".com.hn" },
+      { tld: ".net.hn", label: ".net.hn" },
+      { tld: ".org.hn", label: ".org.hn" },
+      { tld: ".edu.hn", label: ".edu.hn" },
+      { tld: ".gob.hn", label: ".gob.hn" },
+      { tld: ".gov.hn", label: ".gov.hn" },
+      { tld: ".mil.hn", label: ".mil.hn" },
+    ],
+  },
+  {
+    region: "El Salvador",
+    tlds: [
+      { tld: ".sv", label: ".sv" },
+      { tld: ".com.sv", label: ".com.sv" },
+      { tld: ".net.sv", label: ".net.sv" },
+      { tld: ".org.sv", label: ".org.sv" },
+      { tld: ".edu.sv", label: ".edu.sv" },
+      { tld: ".gob.sv", label: ".gob.sv" },
+      { tld: ".gov.sv", label: ".gov.sv" },
+      { tld: ".mil.sv", label: ".mil.sv" },
+      { tld: ".red.sv", label: ".red.sv" },
+    ],
+  },
+  {
+    region: "Nicaragua",
+    tlds: [
+      { tld: ".ni", label: ".ni" },
+      { tld: ".com.ni", label: ".com.ni" },
+      { tld: ".net.ni", label: ".net.ni" },
+      { tld: ".org.ni", label: ".org.ni" },
+      { tld: ".edu.ni", label: ".edu.ni" },
+      { tld: ".gob.ni", label: ".gob.ni" },
+      { tld: ".gov.ni", label: ".gov.ni" },
+      { tld: ".mil.ni", label: ".mil.ni" },
+      { tld: ".ac.ni", label: ".ac.ni" },
+      { tld: ".co.ni", label: ".co.ni" },
+      { tld: ".web.ni", label: ".web.ni" },
+    ],
+  },
+  {
+    region: "Panamá",
+    tlds: [
+      { tld: ".pa", label: ".pa" },
+      { tld: ".com.pa", label: ".com.pa" },
+      { tld: ".net.pa", label: ".net.pa" },
+      { tld: ".org.pa", label: ".org.pa" },
+      { tld: ".edu.pa", label: ".edu.pa" },
+      { tld: ".gob.pa", label: ".gob.pa" },
+      { tld: ".gov.pa", label: ".gov.pa" },
+      { tld: ".sld.pa", label: ".sld.pa" },
+      { tld: ".abo.pa", label: ".abo.pa" },
+      { tld: ".ing.pa", label: ".ing.pa" },
+      { tld: ".med.pa", label: ".med.pa" },
+      { tld: ".nom.pa", label: ".nom.pa" },
+    ],
+  },
+  {
+    region: "Cuba",
+    tlds: [
+      { tld: ".cu", label: ".cu" },
+      { tld: ".com.cu", label: ".com.cu" },
+      { tld: ".net.cu", label: ".net.cu" },
+      { tld: ".org.cu", label: ".org.cu" },
+      { tld: ".edu.cu", label: ".edu.cu" },
+      { tld: ".gob.cu", label: ".gob.cu" },
+      { tld: ".inf.cu", label: ".inf.cu" },
+    ],
+  },
+  {
+    region: "Caribe & otros",
+    tlds: [
+      { tld: ".pr", label: ".pr — Puerto Rico" },
+      { tld: ".com.pr", label: ".com.pr" },
+      { tld: ".net.pr", label: ".net.pr" },
+      { tld: ".org.pr", label: ".org.pr" },
+      { tld: ".gov.pr", label: ".gov.pr" },
+      { tld: ".edu.pr", label: ".edu.pr" },
+      { tld: ".jm", label: ".jm — Jamaica" },
+      { tld: ".com.jm", label: ".com.jm" },
+      { tld: ".gov.jm", label: ".gov.jm" },
+      { tld: ".edu.jm", label: ".edu.jm" },
+      { tld: ".tt", label: ".tt — Trinidad y Tobago" },
+      { tld: ".co.tt", label: ".co.tt" },
+      { tld: ".gov.tt", label: ".gov.tt" },
+      { tld: ".edu.tt", label: ".edu.tt" },
+      { tld: ".ht", label: ".ht — Haití" },
+      { tld: ".bb", label: ".bb — Barbados" },
+      { tld: ".bs", label: ".bs — Bahamas" },
+      { tld: ".bz", label: ".bz — Belice" },
+      { tld: ".sr", label: ".sr — Surinam" },
+      { tld: ".gy", label: ".gy — Guyana" },
+      { tld: ".gp", label: ".gp — Guadalupe" },
+      { tld: ".mq", label: ".mq — Martinica" },
+      { tld: ".aw", label: ".aw — Aruba" },
+      { tld: ".cw", label: ".cw — Curaçao" },
+      { tld: ".dm", label: ".dm — Dominica" },
+      { tld: ".lc", label: ".lc — Santa Lucía" },
+      { tld: ".vc", label: ".vc — San Vicente" },
+      { tld: ".ag", label: ".ag — Antigua y Barbuda" },
+      { tld: ".kn", label: ".kn — San Cristóbal y Nieves" },
+    ],
+  },
+  {
+    region: "España & Portugal",
+    tlds: [
+      { tld: ".es", label: ".es — España" },
+      { tld: ".com.es", label: ".com.es" },
+      { tld: ".nom.es", label: ".nom.es" },
+      { tld: ".org.es", label: ".org.es" },
+      { tld: ".gob.es", label: ".gob.es" },
+      { tld: ".edu.es", label: ".edu.es" },
+      { tld: ".pt", label: ".pt — Portugal" },
+      { tld: ".com.pt", label: ".com.pt" },
+      { tld: ".net.pt", label: ".net.pt" },
+      { tld: ".org.pt", label: ".org.pt" },
+      { tld: ".gov.pt", label: ".gov.pt" },
+      { tld: ".edu.pt", label: ".edu.pt" },
+    ],
+  },
+  {
+    region: "Reino Unido",
+    tlds: [
+      { tld: ".uk", label: ".uk" },
+      { tld: ".co.uk", label: ".co.uk" },
+      { tld: ".org.uk", label: ".org.uk" },
+      { tld: ".net.uk", label: ".net.uk" },
+      { tld: ".gov.uk", label: ".gov.uk" },
+      { tld: ".ac.uk", label: ".ac.uk" },
+      { tld: ".sch.uk", label: ".sch.uk" },
+      { tld: ".nhs.uk", label: ".nhs.uk" },
+      { tld: ".police.uk", label: ".police.uk" },
+      { tld: ".mod.uk", label: ".mod.uk" },
+      { tld: ".me.uk", label: ".me.uk" },
+      { tld: ".ltd.uk", label: ".ltd.uk" },
+      { tld: ".plc.uk", label: ".plc.uk" },
+    ],
+  },
+  {
+    region: "Europa",
+    tlds: [
+      { tld: ".fr", label: ".fr — Francia" },
+      { tld: ".gouv.fr", label: ".gouv.fr" },
+      { tld: ".de", label: ".de — Alemania" },
+      { tld: ".it", label: ".it — Italia" },
+      { tld: ".gov.it", label: ".gov.it" },
+      { tld: ".nl", label: ".nl — Países Bajos" },
+      { tld: ".be", label: ".be — Bélgica" },
+      { tld: ".ch", label: ".ch — Suiza" },
+      { tld: ".at", label: ".at — Austria" },
+      { tld: ".gv.at", label: ".gv.at" },
+      { tld: ".se", label: ".se — Suecia" },
+      { tld: ".no", label: ".no — Noruega" },
+      { tld: ".dk", label: ".dk — Dinamarca" },
+      { tld: ".fi", label: ".fi — Finlandia" },
+      { tld: ".pl", label: ".pl — Polonia" },
+      { tld: ".gov.pl", label: ".gov.pl" },
+      { tld: ".ru", label: ".ru — Rusia" },
+      { tld: ".gov.ru", label: ".gov.ru" },
+      { tld: ".ua", label: ".ua — Ucrania" },
+      { tld: ".gov.ua", label: ".gov.ua" },
+      { tld: ".ro", label: ".ro — Rumanía" },
+      { tld: ".hu", label: ".hu — Hungría" },
+      { tld: ".cz", label: ".cz — Rep. Checa" },
+      { tld: ".sk", label: ".sk — Eslovaquia" },
+      { tld: ".gr", label: ".gr — Grecia" },
+      { tld: ".gov.gr", label: ".gov.gr" },
+      { tld: ".tr", label: ".tr — Turquía" },
+      { tld: ".gov.tr", label: ".gov.tr" },
+      { tld: ".edu.tr", label: ".edu.tr" },
+      { tld: ".ie", label: ".ie — Irlanda" },
+      { tld: ".gov.ie", label: ".gov.ie" },
+      { tld: ".hr", label: ".hr — Croacia" },
+      { tld: ".rs", label: ".rs — Serbia" },
+      { tld: ".gov.rs", label: ".gov.rs" },
+      { tld: ".bg", label: ".bg — Bulgaria" },
+      { tld: ".gov.bg", label: ".gov.bg" },
+      { tld: ".lt", label: ".lt — Lituania" },
+      { tld: ".lv", label: ".lv — Letonia" },
+      { tld: ".gov.lv", label: ".gov.lv" },
+      { tld: ".ee", label: ".ee — Estonia" },
+      { tld: ".si", label: ".si — Eslovenia" },
+      { tld: ".gov.si", label: ".gov.si" },
+      { tld: ".lu", label: ".lu — Luxemburgo" },
+      { tld: ".mt", label: ".mt — Malta" },
+      { tld: ".gov.mt", label: ".gov.mt" },
+      { tld: ".cy", label: ".cy — Chipre" },
+      { tld: ".gov.cy", label: ".gov.cy" },
+      { tld: ".is", label: ".is — Islandia" },
+      { tld: ".al", label: ".al — Albania" },
+      { tld: ".gov.al", label: ".gov.al" },
+      { tld: ".ba", label: ".ba — Bosnia" },
+      { tld: ".mk", label: ".mk — Macedonia del Norte" },
+      { tld: ".gov.mk", label: ".gov.mk" },
+      { tld: ".me", label: ".me — Montenegro" },
+      { tld: ".gov.me", label: ".gov.me" },
+      { tld: ".md", label: ".md — Moldavia" },
+      { tld: ".gov.md", label: ".gov.md" },
+      { tld: ".by", label: ".by — Bielorrusia" },
+      { tld: ".gov.by", label: ".gov.by" },
+      { tld: ".am", label: ".am — Armenia" },
+      { tld: ".gov.am", label: ".gov.am" },
+      { tld: ".az", label: ".az — Azerbaiyán" },
+      { tld: ".gov.az", label: ".gov.az" },
+      { tld: ".ge", label: ".ge — Georgia" },
+      { tld: ".gov.ge", label: ".gov.ge" },
+      { tld: ".li", label: ".li — Liechtenstein" },
+      { tld: ".ad", label: ".ad — Andorra" },
+      { tld: ".mc", label: ".mc — Mónaco" },
+      { tld: ".sm", label: ".sm — San Marino" },
+    ],
+  },
+  {
+    region: "Norteamérica",
+    tlds: [
+      { tld: ".us", label: ".us — EE.UU." },
+      { tld: ".gov", label: ".gov — EE.UU. Gobierno" },
+      { tld: ".edu", label: ".edu — EE.UU. Educación" },
+      { tld: ".mil", label: ".mil — EE.UU. Militar" },
+      { tld: ".ca", label: ".ca — Canadá" },
+      { tld: ".gc.ca", label: ".gc.ca — Canadá Gobierno" },
+    ],
+  },
+  {
+    region: "Asia",
+    tlds: [
+      { tld: ".cn", label: ".cn — China" },
+      { tld: ".com.cn", label: ".com.cn" },
+      { tld: ".gov.cn", label: ".gov.cn" },
+      { tld: ".edu.cn", label: ".edu.cn" },
+      { tld: ".mil.cn", label: ".mil.cn" },
+      { tld: ".ac.cn", label: ".ac.cn" },
+      { tld: ".jp", label: ".jp — Japón" },
+      { tld: ".co.jp", label: ".co.jp" },
+      { tld: ".go.jp", label: ".go.jp" },
+      { tld: ".ac.jp", label: ".ac.jp" },
+      { tld: ".ne.jp", label: ".ne.jp" },
+      { tld: ".or.jp", label: ".or.jp" },
+      { tld: ".ed.jp", label: ".ed.jp" },
+      { tld: ".lg.jp", label: ".lg.jp" },
+      { tld: ".kr", label: ".kr — Corea del Sur" },
+      { tld: ".go.kr", label: ".go.kr" },
+      { tld: ".co.kr", label: ".co.kr" },
+      { tld: ".ac.kr", label: ".ac.kr" },
+      { tld: ".or.kr", label: ".or.kr" },
+      { tld: ".ne.kr", label: ".ne.kr" },
+      { tld: ".in", label: ".in — India" },
+      { tld: ".co.in", label: ".co.in" },
+      { tld: ".gov.in", label: ".gov.in" },
+      { tld: ".edu.in", label: ".edu.in" },
+      { tld: ".ac.in", label: ".ac.in" },
+      { tld: ".nic.in", label: ".nic.in" },
+      { tld: ".res.in", label: ".res.in" },
+      { tld: ".id", label: ".id — Indonesia" },
+      { tld: ".co.id", label: ".co.id" },
+      { tld: ".go.id", label: ".go.id" },
+      { tld: ".ac.id", label: ".ac.id" },
+      { tld: ".net.id", label: ".net.id" },
+      { tld: ".org.id", label: ".org.id" },
+      { tld: ".mil.id", label: ".mil.id" },
+      { tld: ".th", label: ".th — Tailandia" },
+      { tld: ".co.th", label: ".co.th" },
+      { tld: ".go.th", label: ".go.th" },
+      { tld: ".ac.th", label: ".ac.th" },
+      { tld: ".or.th", label: ".or.th" },
+      { tld: ".net.th", label: ".net.th" },
+      { tld: ".vn", label: ".vn — Vietnam" },
+      { tld: ".com.vn", label: ".com.vn" },
+      { tld: ".gov.vn", label: ".gov.vn" },
+      { tld: ".edu.vn", label: ".edu.vn" },
+      { tld: ".net.vn", label: ".net.vn" },
+      { tld: ".org.vn", label: ".org.vn" },
+      { tld: ".ph", label: ".ph — Filipinas" },
+      { tld: ".com.ph", label: ".com.ph" },
+      { tld: ".gov.ph", label: ".gov.ph" },
+      { tld: ".edu.ph", label: ".edu.ph" },
+      { tld: ".net.ph", label: ".net.ph" },
+      { tld: ".org.ph", label: ".org.ph" },
+      { tld: ".mil.ph", label: ".mil.ph" },
+      { tld: ".my", label: ".my — Malasia" },
+      { tld: ".com.my", label: ".com.my" },
+      { tld: ".gov.my", label: ".gov.my" },
+      { tld: ".edu.my", label: ".edu.my" },
+      { tld: ".net.my", label: ".net.my" },
+      { tld: ".org.my", label: ".org.my" },
+      { tld: ".mil.my", label: ".mil.my" },
+      { tld: ".sg", label: ".sg — Singapur" },
+      { tld: ".com.sg", label: ".com.sg" },
+      { tld: ".gov.sg", label: ".gov.sg" },
+      { tld: ".edu.sg", label: ".edu.sg" },
+      { tld: ".net.sg", label: ".net.sg" },
+      { tld: ".org.sg", label: ".org.sg" },
+      { tld: ".hk", label: ".hk — Hong Kong" },
+      { tld: ".com.hk", label: ".com.hk" },
+      { tld: ".gov.hk", label: ".gov.hk" },
+      { tld: ".edu.hk", label: ".edu.hk" },
+      { tld: ".net.hk", label: ".net.hk" },
+      { tld: ".org.hk", label: ".org.hk" },
+      { tld: ".tw", label: ".tw — Taiwán" },
+      { tld: ".com.tw", label: ".com.tw" },
+      { tld: ".gov.tw", label: ".gov.tw" },
+      { tld: ".edu.tw", label: ".edu.tw" },
+      { tld: ".net.tw", label: ".net.tw" },
+      { tld: ".org.tw", label: ".org.tw" },
+      { tld: ".pk", label: ".pk — Pakistán" },
+      { tld: ".com.pk", label: ".com.pk" },
+      { tld: ".gov.pk", label: ".gov.pk" },
+      { tld: ".edu.pk", label: ".edu.pk" },
+      { tld: ".net.pk", label: ".net.pk" },
+      { tld: ".org.pk", label: ".org.pk" },
+      { tld: ".bd", label: ".bd — Bangladesh" },
+      { tld: ".com.bd", label: ".com.bd" },
+      { tld: ".gov.bd", label: ".gov.bd" },
+      { tld: ".edu.bd", label: ".edu.bd" },
+      { tld: ".sa", label: ".sa — Arabia Saudita" },
+      { tld: ".com.sa", label: ".com.sa" },
+      { tld: ".gov.sa", label: ".gov.sa" },
+      { tld: ".edu.sa", label: ".edu.sa" },
+      { tld: ".net.sa", label: ".net.sa" },
+      { tld: ".org.sa", label: ".org.sa" },
+      { tld: ".ae", label: ".ae — Emiratos Árabes" },
+      { tld: ".com.ae", label: ".com.ae" },
+      { tld: ".gov.ae", label: ".gov.ae" },
+      { tld: ".edu.ae", label: ".edu.ae" },
+      { tld: ".net.ae", label: ".net.ae" },
+      { tld: ".org.ae", label: ".org.ae" },
+      { tld: ".il", label: ".il — Israel" },
+      { tld: ".co.il", label: ".co.il" },
+      { tld: ".gov.il", label: ".gov.il" },
+      { tld: ".ac.il", label: ".ac.il" },
+      { tld: ".net.il", label: ".net.il" },
+      { tld: ".org.il", label: ".org.il" },
+      { tld: ".ir", label: ".ir — Irán" },
+      { tld: ".co.ir", label: ".co.ir" },
+      { tld: ".gov.ir", label: ".gov.ir" },
+      { tld: ".ac.ir", label: ".ac.ir" },
+      { tld: ".iq", label: ".iq — Irak" },
+      { tld: ".gov.iq", label: ".gov.iq" },
+      { tld: ".edu.iq", label: ".edu.iq" },
+      { tld: ".jo", label: ".jo — Jordania" },
+      { tld: ".com.jo", label: ".com.jo" },
+      { tld: ".gov.jo", label: ".gov.jo" },
+      { tld: ".edu.jo", label: ".edu.jo" },
+      { tld: ".lb", label: ".lb — Líbano" },
+      { tld: ".com.lb", label: ".com.lb" },
+      { tld: ".gov.lb", label: ".gov.lb" },
+      { tld: ".edu.lb", label: ".edu.lb" },
+      { tld: ".kw", label: ".kw — Kuwait" },
+      { tld: ".com.kw", label: ".com.kw" },
+      { tld: ".gov.kw", label: ".gov.kw" },
+      { tld: ".qa", label: ".qa — Catar" },
+      { tld: ".com.qa", label: ".com.qa" },
+      { tld: ".gov.qa", label: ".gov.qa" },
+      { tld: ".edu.qa", label: ".edu.qa" },
+      { tld: ".om", label: ".om — Omán" },
+      { tld: ".com.om", label: ".com.om" },
+      { tld: ".gov.om", label: ".gov.om" },
+      { tld: ".edu.om", label: ".edu.om" },
+      { tld: ".kz", label: ".kz — Kazajistán" },
+      { tld: ".gov.kz", label: ".gov.kz" },
+      { tld: ".edu.kz", label: ".edu.kz" },
+    ],
+  },
+  {
+    region: "África",
+    tlds: [
+      { tld: ".za", label: ".za — Sudáfrica" },
+      { tld: ".co.za", label: ".co.za" },
+      { tld: ".gov.za", label: ".gov.za" },
+      { tld: ".edu.za", label: ".edu.za" },
+      { tld: ".ac.za", label: ".ac.za" },
+      { tld: ".org.za", label: ".org.za" },
+      { tld: ".net.za", label: ".net.za" },
+      { tld: ".eg", label: ".eg — Egipto" },
+      { tld: ".com.eg", label: ".com.eg" },
+      { tld: ".gov.eg", label: ".gov.eg" },
+      { tld: ".edu.eg", label: ".edu.eg" },
+      { tld: ".ma", label: ".ma — Marruecos" },
+      { tld: ".co.ma", label: ".co.ma" },
+      { tld: ".gov.ma", label: ".gov.ma" },
+      { tld: ".ac.ma", label: ".ac.ma" },
+      { tld: ".ng", label: ".ng — Nigeria" },
+      { tld: ".com.ng", label: ".com.ng" },
+      { tld: ".gov.ng", label: ".gov.ng" },
+      { tld: ".edu.ng", label: ".edu.ng" },
+      { tld: ".ke", label: ".ke — Kenia" },
+      { tld: ".co.ke", label: ".co.ke" },
+      { tld: ".go.ke", label: ".go.ke" },
+      { tld: ".ac.ke", label: ".ac.ke" },
+      { tld: ".gh", label: ".gh — Ghana" },
+      { tld: ".com.gh", label: ".com.gh" },
+      { tld: ".gov.gh", label: ".gov.gh" },
+      { tld: ".edu.gh", label: ".edu.gh" },
+      { tld: ".tz", label: ".tz — Tanzania" },
+      { tld: ".co.tz", label: ".co.tz" },
+      { tld: ".go.tz", label: ".go.tz" },
+      { tld: ".ac.tz", label: ".ac.tz" },
+      { tld: ".dz", label: ".dz — Argelia" },
+      { tld: ".com.dz", label: ".com.dz" },
+      { tld: ".gov.dz", label: ".gov.dz" },
+      { tld: ".edu.dz", label: ".edu.dz" },
+      { tld: ".tn", label: ".tn — Túnez" },
+      { tld: ".com.tn", label: ".com.tn" },
+      { tld: ".gov.tn", label: ".gov.tn" },
+      { tld: ".edunet.tn", label: ".edunet.tn" },
+      { tld: ".ly", label: ".ly — Libia" },
+      { tld: ".com.ly", label: ".com.ly" },
+      { tld: ".gov.ly", label: ".gov.ly" },
+      { tld: ".sd", label: ".sd — Sudán" },
+      { tld: ".gov.sd", label: ".gov.sd" },
+      { tld: ".edu.sd", label: ".edu.sd" },
+      { tld: ".ao", label: ".ao — Angola" },
+      { tld: ".co.ao", label: ".co.ao" },
+      { tld: ".gv.ao", label: ".gv.ao" },
+      { tld: ".cm", label: ".cm — Camerún" },
+      { tld: ".gov.cm", label: ".gov.cm" },
+      { tld: ".ci", label: ".ci — Costa de Marfil" },
+      { tld: ".co.ci", label: ".co.ci" },
+      { tld: ".gouv.ci", label: ".gouv.ci" },
+      { tld: ".sn", label: ".sn — Senegal" },
+      { tld: ".gouv.sn", label: ".gouv.sn" },
+      { tld: ".edu.sn", label: ".edu.sn" },
+      { tld: ".ug", label: ".ug — Uganda" },
+      { tld: ".co.ug", label: ".co.ug" },
+      { tld: ".go.ug", label: ".go.ug" },
+      { tld: ".ac.ug", label: ".ac.ug" },
+      { tld: ".zw", label: ".zw — Zimbabue" },
+      { tld: ".co.zw", label: ".co.zw" },
+      { tld: ".gov.zw", label: ".gov.zw" },
+      { tld: ".ac.zw", label: ".ac.zw" },
+      { tld: ".mz", label: ".mz — Mozambique" },
+      { tld: ".co.mz", label: ".co.mz" },
+      { tld: ".gov.mz", label: ".gov.mz" },
+      { tld: ".rw", label: ".rw — Ruanda" },
+      { tld: ".gov.rw", label: ".gov.rw" },
+      { tld: ".ac.rw", label: ".ac.rw" },
+    ],
+  },
+  {
+    region: "Oceanía",
+    tlds: [
+      { tld: ".au", label: ".au — Australia" },
+      { tld: ".com.au", label: ".com.au" },
+      { tld: ".net.au", label: ".net.au" },
+      { tld: ".org.au", label: ".org.au" },
+      { tld: ".gov.au", label: ".gov.au" },
+      { tld: ".edu.au", label: ".edu.au" },
+      { tld: ".asn.au", label: ".asn.au" },
+      { tld: ".id.au", label: ".id.au" },
+      { tld: ".nz", label: ".nz — Nueva Zelanda" },
+      { tld: ".co.nz", label: ".co.nz" },
+      { tld: ".net.nz", label: ".net.nz" },
+      { tld: ".org.nz", label: ".org.nz" },
+      { tld: ".govt.nz", label: ".govt.nz" },
+      { tld: ".ac.nz", label: ".ac.nz" },
+      { tld: ".school.nz", label: ".school.nz" },
+      { tld: ".mil.nz", label: ".mil.nz" },
+      { tld: ".fj", label: ".fj — Fiyi" },
+      { tld: ".com.fj", label: ".com.fj" },
+      { tld: ".gov.fj", label: ".gov.fj" },
+      { tld: ".pg", label: ".pg — Papúa Nueva Guinea" },
+      { tld: ".com.pg", label: ".com.pg" },
+      { tld: ".gov.pg", label: ".gov.pg" },
+    ],
+  },
+  {
+    region: "Genéricos",
+    tlds: [
+      { tld: ".com", label: ".com" },
+      { tld: ".net", label: ".net" },
+      { tld: ".org", label: ".org" },
+      { tld: ".edu", label: ".edu" },
+      { tld: ".gov", label: ".gov" },
+      { tld: ".mil", label: ".mil" },
+      { tld: ".int", label: ".int" },
+      { tld: ".info", label: ".info" },
+      { tld: ".biz", label: ".biz" },
+      { tld: ".io", label: ".io" },
+      { tld: ".app", label: ".app" },
+      { tld: ".dev", label: ".dev" },
+      { tld: ".tech", label: ".tech" },
+      { tld: ".online", label: ".online" },
+      { tld: ".store", label: ".store" },
+      { tld: ".cloud", label: ".cloud" },
+      { tld: ".site", label: ".site" },
+      { tld: ".web", label: ".web" },
+    ],
+  },
 ]
 
 export function GoogleDorksGenerator() {
   const [domain, setDomain] = useState("")
+  const [showTldPicker, setShowTldPicker] = useState(false)
+  const [tldSearch, setTldSearch] = useState("")
+  const [selectedTlds, setSelectedTlds] = useState<string[]>([])
   const [copiedIndex, setCopiedIndex] = useState<string | null>(null)
   const [activeTab, setActiveTab] = useState<"dorks" | "payloads" | "tools" | "xss-exploit">("dorks")
   const [dorkFilter, setDorkFilter] = useState("all")
@@ -1198,7 +2462,7 @@ export function GoogleDorksGenerator() {
     return host ? payload.replace(/ATTACKER\.com/g, host) : payload
   }
 
-  const dorkGroups = ["all", "Recon", "Web Vulns", "Credenciales", "Archivos", "Infraestructura", "Cloud", "CMS", "OSINT"]
+  const dorkGroups = ["all", "Recon", "Web Vulns", "Credenciales", "Archivos", "Infraestructura", "Cloud", "CMS", "OSINT", "CVE / Exploits"]
 
   const replaceDomain = (dork: string, inputDomain: string) => {
     // When no domain: strip optional " site:{domain}" so wordlist dorks work as global search
@@ -1570,7 +2834,7 @@ export function GoogleDorksGenerator() {
           {/* Domain input + filtros — solo visible en dorks */}
           {activeTab === "dorks" && (
             <div className="max-w-3xl mx-auto mb-10">
-              <div className="relative group mb-6">
+              <div className="relative group mb-3">
                 <div className="absolute inset-0 bg-gradient-to-r from-cyan-500/20 to-purple-500/20 rounded-2xl blur-lg group-hover:blur-xl transition-all"></div>
                 <div className="relative">
                   <Search className="absolute left-6 top-1/2 -translate-y-1/2 h-6 w-6 text-gray-400" />
@@ -1579,17 +2843,138 @@ export function GoogleDorksGenerator() {
                     placeholder="example.com, target.com, *.domain.com"
                     value={domain}
                     onChange={(e) => setDomain(e.target.value)}
-                    className="w-full pl-14 pr-6 py-6 text-lg bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl text-white placeholder-gray-400 focus:border-cyan-400 focus:ring-2 focus:ring-cyan-400/20 transition-all shadow-2xl"
+                    className="w-full pl-14 pr-44 py-6 text-lg bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl text-white placeholder-gray-400 focus:border-cyan-400 focus:ring-2 focus:ring-cyan-400/20 transition-all shadow-2xl"
                   />
-                  <Button
-                    onClick={openAllDorks}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 bg-gradient-to-r from-purple-500 to-cyan-500 hover:from-purple-600 hover:to-cyan-600 text-white font-semibold px-4 py-2 rounded-lg shadow-lg hover:shadow-xl transition-all hover:scale-105"
-                  >
-                    <Zap className="h-4 w-4 mr-2" />
-                    Open All Dorks
-                  </Button>
+                  <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-2">
+                    <button
+                      onClick={() => { setShowTldPicker((v) => !v); setTldSearch("") }}
+                      className={`flex items-center gap-1.5 px-3 py-2 rounded-lg border transition-all text-xs font-semibold ${
+                        selectedTlds.length > 0
+                          ? "bg-cyan-500/20 border-cyan-400/40 text-cyan-300"
+                          : "bg-white/10 border-white/20 text-gray-300 hover:text-white hover:bg-white/20"
+                      }`}
+                      title="Seleccionar TLD de país"
+                    >
+                      <Globe className="h-4 w-4" />
+                      TLD{selectedTlds.length > 0 && <span className="bg-cyan-500 text-white rounded-full px-1.5 py-0.5 text-[10px] ml-0.5">{selectedTlds.length}</span>}
+                    </button>
+                    <Button
+                      onClick={openAllDorks}
+                      className="bg-gradient-to-r from-purple-500 to-cyan-500 hover:from-purple-600 hover:to-cyan-600 text-white font-semibold px-4 py-2 rounded-lg shadow-lg hover:shadow-xl transition-all hover:scale-105"
+                    >
+                      <Zap className="h-4 w-4 mr-2" />
+                      Open All
+                    </Button>
+                  </div>
                 </div>
               </div>
+
+              {/* TLD Picker Panel */}
+              {showTldPicker && (
+                <div className="relative mb-4">
+                  <div className="bg-gray-900/95 backdrop-blur-md border border-white/15 rounded-2xl shadow-2xl overflow-hidden">
+                    {/* Header */}
+                    <div className="flex items-center justify-between px-4 py-3 border-b border-white/10">
+                      <span className="text-sm font-semibold text-white flex items-center gap-2">
+                        <Globe className="h-4 w-4 text-cyan-400" />
+                        Selecciona los TLDs — puedes elegir varios
+                      </span>
+                      <button
+                        onClick={() => setShowTldPicker(false)}
+                        className="text-gray-400 hover:text-white transition-colors text-lg leading-none"
+                      >
+                        ×
+                      </button>
+                    </div>
+                    {/* Search */}
+                    <div className="px-4 py-3 border-b border-white/10">
+                      <input
+                        type="text"
+                        placeholder="Buscar país o extensión..."
+                        value={tldSearch}
+                        onChange={(e) => setTldSearch(e.target.value)}
+                        autoFocus
+                        className="w-full px-4 py-2 bg-white/5 border border-white/10 rounded-xl text-sm text-white placeholder-gray-500 focus:outline-none focus:border-cyan-400/50 transition-all"
+                      />
+                    </div>
+                    {/* TLD groups */}
+                    <div className="max-h-64 overflow-y-auto px-4 py-3 space-y-4">
+                      {COUNTRY_TLDS.map((group) => {
+                        const filtered = group.tlds.filter(
+                          (t) =>
+                            tldSearch === "" ||
+                            t.tld.includes(tldSearch.toLowerCase()) ||
+                            t.label.toLowerCase().includes(tldSearch.toLowerCase())
+                        )
+                        if (filtered.length === 0) return null
+                        return (
+                          <div key={group.region}>
+                            <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-2">{group.region}</p>
+                            <div className="flex flex-wrap gap-1.5">
+                              {filtered.map(({ tld, label }) => {
+                                const isSelected = selectedTlds.includes(tld)
+                                return (
+                                  <button
+                                    key={tld}
+                                    title={label}
+                                    onClick={() =>
+                                      setSelectedTlds((prev) =>
+                                        isSelected ? prev.filter((t) => t !== tld) : [...prev, tld]
+                                      )
+                                    }
+                                    className={`px-2.5 py-1 rounded-lg text-xs font-mono transition-all border ${
+                                      isSelected
+                                        ? "bg-cyan-500/30 border-cyan-400/60 text-white shadow-sm shadow-cyan-500/20"
+                                        : "bg-white/5 border-white/10 text-cyan-300 hover:bg-cyan-500/20 hover:border-cyan-400/40 hover:text-white"
+                                    }`}
+                                  >
+                                    {isSelected && <span className="mr-1 text-cyan-400">✓</span>}
+                                    {tld}
+                                  </button>
+                                )
+                              })}
+                            </div>
+                          </div>
+                        )
+                      })}
+                    </div>
+                    {/* Footer con acciones */}
+                    <div className="px-4 py-3 border-t border-white/10 flex items-center justify-between gap-3">
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs text-gray-400">
+                          {selectedTlds.length > 0
+                            ? <span className="text-cyan-400 font-semibold">{selectedTlds.length} seleccionado{selectedTlds.length !== 1 ? "s" : ""}</span>
+                            : <span>{COUNTRY_TLDS.reduce((a, g) => a + g.tlds.length, 0)} extensiones disponibles</span>
+                          }
+                        </span>
+                        {selectedTlds.length > 0 && (
+                          <button
+                            onClick={() => setSelectedTlds([])}
+                            className="text-xs text-gray-500 hover:text-red-400 transition-colors underline"
+                          >
+                            limpiar
+                          </button>
+                        )}
+                      </div>
+                      <button
+                        disabled={selectedTlds.length === 0}
+                        onClick={() => {
+                          setDomain((prev) => {
+                            const base = prev.trim().replace(/(\.[a-z]{2,}\.[a-z]{2,}|\.[a-z]{2,})$/, "")
+                            if (!base) return selectedTlds.join(", ")
+                            return selectedTlds.map((tld) => base + tld).join(", ")
+                          })
+                          setShowTldPicker(false)
+                        }}
+                        className="px-4 py-1.5 rounded-lg text-xs font-semibold bg-gradient-to-r from-cyan-500 to-purple-500 text-white hover:from-cyan-600 hover:to-purple-600 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+                      >
+                        Aplicar TLDs
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
+
               <p className="text-gray-400 mb-6 text-sm text-center">
                 Enter single or multiple domains separated by commas • Supports wildcards and subdomains
               </p>
