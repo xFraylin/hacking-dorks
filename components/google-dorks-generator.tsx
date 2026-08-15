@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -8,6 +8,22 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Copy, Check, ExternalLink, Search, Sparkles, Shield, Zap, Target, Eye, Lock, AlertTriangle, Database, Code, FileText, Globe, Github, Linkedin, Video, Bug, Wrench, Download, Terminal, Key, Hash, List, ShoppingBag, Mail, Cloud } from "lucide-react"
 import { sqlInjectionDorks, cctvDorks, lfiDorks, sensitiveDataDorks } from "@/components/dork-data/wordlist-categories"
 import { allPayloadCategories, xssExploitSections, type PayloadCategory } from "@/components/payload-data/attack-payloads"
+import { JwtEditor } from "@/components/jwt-editor"
+import { TransformationChain } from "@/components/transformation-chain"
+import { AutoDecodePanel } from "@/components/auto-decode-panel"
+import {
+  urlEncode, urlDecode, doubleUrlEncode,
+  base64Encode, base64Decode,
+  htmlEncode, htmlDecode,
+  hexEncode, hexDecode,
+  unicodeEscape, unicodeUnescape,
+  jsHexEscape, jsHexUnescape,
+} from "@/lib/codec-utils"
+import { autoDecode, type AutoDecodeResult } from "@/lib/auto-decode"
+import { copyToClipboard } from "@/lib/clipboard-utils"
+import { crackHash } from "@/lib/hash-cracker"
+
+const ACTIVE_TAB_LS_KEY = "hacking-dorks:active-tab"
 
 interface DorkCategory {
   title: string
@@ -2564,6 +2580,21 @@ export function GoogleDorksGenerator() {
   const [selectedTlds, setSelectedTlds] = useState<string[]>([])
   const [copiedIndex, setCopiedIndex] = useState<string | null>(null)
   const [activeTab, setActiveTab] = useState<"dorks" | "payloads" | "tools" | "xss-exploit">("dorks")
+  // Restore the last-viewed tab after a reload. Runs after hydration on
+  // purpose (avoids a server/client render mismatch on this static-exported
+  // page) — the tab starts on "dorks" for a beat, then snaps to whatever was
+  // saved, instead of the reload silently discarding where the user was.
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem(ACTIVE_TAB_LS_KEY)
+      if (saved === "dorks" || saved === "payloads" || saved === "tools" || saved === "xss-exploit") {
+        setActiveTab(saved)
+      }
+    } catch { /* localStorage unavailable */ }
+  }, [])
+  useEffect(() => {
+    try { localStorage.setItem(ACTIVE_TAB_LS_KEY, activeTab) } catch { /* storage full/unavailable */ }
+  }, [activeTab])
   const [dorkFilter, setDorkFilter] = useState("all")
   const [dorkSearch, setDorkSearch] = useState("")
   const [payloadFilter, setPayloadFilter] = useState("all")
@@ -2572,6 +2603,13 @@ export function GoogleDorksGenerator() {
   const [encInput, setEncInput] = useState("")
   const [encOutput, setEncOutput] = useState("")
   const [encCopied, setEncCopied] = useState(false)
+  const [autoDecodeResult, setAutoDecodeResult] = useState<AutoDecodeResult | null>(null)
+  // OFF by default: encoding/decoding manually (pick a button, see the result right
+  // there) must stay simple and predictable. Auto-analyze is an opt-in convenience —
+  // turned on it would otherwise silently swap in the Auto Decode panel every time
+  // you finish typing, even while you're just typing text you meant to encode.
+  const [autoAnalyze, setAutoAnalyze] = useState(false)
+  const [jwtToLoad, setJwtToLoad] = useState<{ token: string; nonce: number } | null>(null)
   // Reverse shell state
   const [rsIP, setRsIP] = useState("")
   const [rsPort, setRsPort] = useState("4444")
@@ -2580,13 +2618,11 @@ export function GoogleDorksGenerator() {
   // Hash Identifier state
   const [hashInput, setHashInput] = useState("")
   const [hashResults, setHashResults] = useState<string[]>([])
-  // JWT Builder state
-  const [jwtAlg, setJwtAlg] = useState("none")
-  const [jwtHeader, setJwtHeader] = useState('{"alg":"none","typ":"JWT"}')
-  const [jwtPayload, setJwtPayload] = useState('{"sub":"admin","role":"admin","exp":9999999999}')
-  const [jwtSecret, setJwtSecret] = useState("")
-  const [jwtOutput, setJwtOutput] = useState("")
-  const [jwtCopied, setJwtCopied] = useState(false)
+  // Hash Cracker (dictionary attack) state
+  const [crackState, setCrackState] = useState<"idle" | "cracking" | "found" | "not-found">("idle")
+  const [crackResult, setCrackResult] = useState<{ algorithm: string; plaintext: string } | null>(null)
+  const [crackMeta, setCrackMeta] = useState<{ attempts: number; algos: string[] } | null>(null)
+  // JWT editing state now lives inside the <JwtEditor /> component.
   // Subdomain Wordlist state
   const [subDomain, setSubDomain] = useState("")
   const [subList, setSubList] = useState<string[]>([])
@@ -2630,8 +2666,9 @@ export function GoogleDorksGenerator() {
     }
   }
 
-  const copyToClipboard = async (text: string, index: string) => {
-    await navigator.clipboard.writeText(text)
+  const copyDork = async (text: string, index: string) => {
+    const ok = await copyToClipboard(text)
+    if (!ok) return
     setCopiedIndex(index)
     setTimeout(() => setCopiedIndex(null), 2000)
   }
@@ -2660,49 +2697,91 @@ export function GoogleDorksGenerator() {
   }
 
   // ── Encoder / Decoder ──────────────────────────────────────────────────────
+  // Each operation is implemented in lib/codec-utils.ts using TextEncoder/TextDecoder
+  // for correct UTF-8 handling (accents, ñ, emoji, etc.) instead of the legacy
+  // escape()/unescape() tricks. Decoders validate their input format and throw
+  // specific, human-readable errors instead of a generic "input inválido".
   const runEncode = (type: string) => {
+    setAutoDecodeResult(null)
     try {
       let result = ""
       switch (type) {
-        case "url-enc":    result = encodeURIComponent(encInput); break
-        case "url-dec":    result = decodeURIComponent(encInput); break
-        case "url-double": result = encodeURIComponent(encodeURIComponent(encInput)); break
-        case "b64-enc":    result = btoa(unescape(encodeURIComponent(encInput))); break
-        case "b64-dec":    result = decodeURIComponent(escape(atob(encInput))); break
-        case "html-enc":
-          result = encInput.replace(/[&<>"'`]/g, (c) =>
-            ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#x27;", "`": "&#x60;" }[c] ?? c))
-          break
-        case "html-dec":
-          result = encInput.replace(/&(amp|lt|gt|quot|#x27|#x60|#(\d+));/g, (_, e, num) =>
-            num ? String.fromCharCode(Number(num)) :
-            ({ amp: "&", lt: "<", gt: ">", quot: '"', "#x27": "'", "#x60": "`" }[e] ?? _))
-          break
-        case "hex-enc":
-          result = Array.from(encInput).map(c => c.charCodeAt(0).toString(16).padStart(2, "0")).join("")
-          break
-        case "hex-dec":
-          result = (encInput.match(/.{1,2}/g) ?? []).map(h => String.fromCharCode(parseInt(h, 16))).join("")
-          break
-        case "unicode":
-          result = Array.from(encInput).map(c => `\\u${c.charCodeAt(0).toString(16).padStart(4,"0")}`).join("")
-          break
-        case "js-escape":
-          result = Array.from(encInput).map(c => `\\x${c.charCodeAt(0).toString(16).padStart(2,"0")}`).join("")
-          break
+        case "url-enc":     result = urlEncode(encInput); break
+        case "url-dec":     result = urlDecode(encInput); break
+        case "url-double":  result = doubleUrlEncode(encInput); break
+        case "b64-enc":     result = base64Encode(encInput); break
+        case "b64-dec":     result = base64Decode(encInput); break
+        case "html-enc":    result = htmlEncode(encInput); break
+        case "html-dec":    result = htmlDecode(encInput); break
+        case "hex-enc":     result = hexEncode(encInput); break
+        case "hex-dec":     result = hexDecode(encInput); break
+        case "unicode":     result = unicodeEscape(encInput); break
+        case "unicode-dec": result = unicodeUnescape(encInput); break
+        case "js-escape":   result = jsHexEscape(encInput); break
+        case "js-unescape": result = jsHexUnescape(encInput); break
         default: result = encInput
       }
       setEncOutput(result)
-    } catch {
-      setEncOutput("⚠ Error: input inválido para esta operación")
+    } catch (e: any) {
+      setEncOutput(`⚠ Error: ${e?.message ?? "input inválido para esta operación"}`)
     }
   }
 
   const copyEncOutput = async () => {
-    await navigator.clipboard.writeText(encOutput)
+    const ok = await copyToClipboard(encOutput)
+    if (!ok) return
     setEncCopied(true)
     setTimeout(() => setEncCopied(false), 2000)
   }
+
+  // ── Smart Recursive Auto Decoder ──────────────────────────────────────────
+  // Beam-searches the space of decode paths (lib/auto-decode.ts) and converges on
+  // the single most probable result — no need to know which format(s) were used
+  // or in what order. Never throws: unrecognized/plain-text input just comes back
+  // as "no confident encoding detected" instead of an error, unlike the manual
+  // decoders above.
+  const runAutoDecode = () => {
+    setEncOutput("")
+    try {
+      setAutoDecodeResult(autoDecode(encInput))
+    } catch {
+      setAutoDecodeResult(null)
+    }
+  }
+
+  const decodeAgain = () => {
+    setAutoDecodeResult((prev) => {
+      if (!prev || !prev.converged || prev.jwt || prev.possibleHash) return prev
+      const again = autoDecode(prev.final)
+      if (!again.converged) return prev // already fully decoded — nothing further to do
+      return { ...again, original: prev.original, steps: [...prev.steps, ...again.steps] }
+    })
+  }
+
+  const openJwtFromAutoDecode = (token: string) => {
+    setJwtToLoad({ token, nonce: Date.now() })
+    requestAnimationFrame(() => {
+      document.getElementById("jwt-editor-section")?.scrollIntoView({ behavior: "smooth", block: "start" })
+    })
+  }
+
+  // "Auto analyze": debounced live preview while typing/pasting. Cheap bounded
+  // search (MAX_DEPTH/BEAM_WIDTH) so this is safe to run on every settle, not
+  // on every keystroke — a short timeout absorbs fast typing and paste bursts.
+  useEffect(() => {
+    if (!autoAnalyze) return
+    if (encInput.trim().length < 4) return
+    const t = setTimeout(() => {
+      setEncOutput("")
+      try {
+        setAutoDecodeResult(autoDecode(encInput))
+      } catch {
+        /* leave whatever was there before */
+      }
+    }, 300)
+    return () => clearTimeout(t)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [encInput, autoAnalyze])
 
   // ── Reverse Shell Generator ────────────────────────────────────────────────
   const reverseShells: Record<string, { label: string; cmd: (ip: string, port: string) => string }> = {
@@ -2763,36 +2842,24 @@ export function GoogleDorksGenerator() {
     return results
   }
 
-  // ── JWT Builder ────────────────────────────────────────────────────────────
-  const b64url = (str: string) =>
-    btoa(unescape(encodeURIComponent(str))).replace(/=/g, "").replace(/\+/g, "-").replace(/\//g, "_")
-
-  const buildJWT = async () => {
-    try {
-      const header = jwtAlg === "none"
-        ? JSON.stringify({ alg: "none", typ: "JWT" })
-        : JSON.stringify({ alg: "HS256", typ: "JWT" })
-      const h = b64url(jwtHeader.trim() || header)
-      const p = b64url(jwtPayload.trim())
-      if (jwtAlg === "none") {
-        setJwtOutput(`${h}.${p}.`)
-        return
-      }
-      const enc = new TextEncoder()
-      const key = await crypto.subtle.importKey("raw", enc.encode(jwtSecret || "secret"), { name: "HMAC", hash: "SHA-256" }, false, ["sign"])
-      const sig = await crypto.subtle.sign("HMAC", key, enc.encode(`${h}.${p}`))
-      const sigB64 = btoa(String.fromCharCode(...new Uint8Array(sig))).replace(/=/g, "").replace(/\+/g, "-").replace(/\//g, "_")
-      setJwtOutput(`${h}.${p}.${sigB64}`)
-    } catch {
-      setJwtOutput("⚠ Error: verifica que el header y payload sean JSON válido")
+  // Dictionary attack against the pasted hash — MD4/MD5/SHA-1/256/384/512, fully
+  // client-side (see lib/hash-cracker.ts). Only runs on demand (not on every
+  // keystroke): it's a few thousand hash computations, cheap but not free.
+  const runCrack = async () => {
+    if (!hashInput.trim()) return
+    setCrackState("cracking")
+    setCrackResult(null)
+    const result = await crackHash(hashInput)
+    setCrackMeta({ attempts: result.attempts, algos: result.candidateAlgorithms })
+    if (result.found) {
+      setCrackResult({ algorithm: result.algorithm!, plaintext: result.plaintext! })
+      setCrackState("found")
+    } else {
+      setCrackState("not-found")
     }
   }
 
-  const copyJWT = async () => {
-    await navigator.clipboard.writeText(jwtOutput)
-    setJwtCopied(true)
-    setTimeout(() => setJwtCopied(false), 2000)
-  }
+  // JWT editing/signing now lives entirely in components/jwt-editor.tsx (JwtEditor).
 
   // ── Subdomain Wordlist ─────────────────────────────────────────────────────
   const subdomainWords = [
@@ -2820,7 +2887,8 @@ export function GoogleDorksGenerator() {
   }
 
   const copySubList = async () => {
-    await navigator.clipboard.writeText(subList.join("\n"))
+    const ok = await copyToClipboard(subList.join("\n"))
+    if (!ok) return
     setSubCopied(true)
     setTimeout(() => setSubCopied(false), 2000)
   }
@@ -2836,7 +2904,8 @@ export function GoogleDorksGenerator() {
   }
 
   const copyShell = async () => {
-    await navigator.clipboard.writeText(currentShell)
+    const ok = await copyToClipboard(currentShell)
+    if (!ok) return
     setRsCopied(true)
     setTimeout(() => setRsCopied(false), 2000)
   }
@@ -3241,7 +3310,7 @@ export function GoogleDorksGenerator() {
                             size="icon"
                             variant="ghost"
                             className="absolute top-2 right-2 h-8 w-8 opacity-0 group-hover/dork:opacity-100 transition-all hover:bg-white/20 rounded-lg"
-                            onClick={() => copyToClipboard(processedDork, uniqueKey)}
+                            onClick={() => copyDork(processedDork, uniqueKey)}
                           >
                             {isCopied ? (
                               <Check className="h-4 w-4 text-green-400" />
@@ -3292,7 +3361,7 @@ export function GoogleDorksGenerator() {
                             variant="ghost"
                             title="Copy all"
                             className="h-7 w-7 hover:bg-white/20 rounded-lg"
-                            onClick={() => copyToClipboard(category.payloads.join("\n"), copyAllKey)}
+                            onClick={() => copyDork(category.payloads.join("\n"), copyAllKey)}
                           >
                             {isCopyAllDone ? (
                               <Check className="h-3.5 w-3.5 text-green-400" />
@@ -3333,7 +3402,7 @@ export function GoogleDorksGenerator() {
                                 size="icon"
                                 variant="ghost"
                                 className="absolute top-2 right-2 h-7 w-7 opacity-0 group-hover/payload:opacity-100 transition-all hover:bg-white/20 rounded-lg"
-                                onClick={() => copyToClipboard(payload, uniqueKey)}
+                                onClick={() => copyDork(payload, uniqueKey)}
                               >
                                 {isCopied ? (
                                   <Check className="h-3.5 w-3.5 text-green-400" />
@@ -3387,8 +3456,10 @@ export function GoogleDorksGenerator() {
                     { id: "html-dec",   label: "HTML Decode" },
                     { id: "hex-enc",    label: "Hex Encode" },
                     { id: "hex-dec",    label: "Hex Decode" },
-                    { id: "unicode",    label: "Unicode Escape" },
-                    { id: "js-escape",  label: "JS \\x Escape" },
+                    { id: "unicode",     label: "Unicode Escape" },
+                    { id: "unicode-dec", label: "Unicode Unescape" },
+                    { id: "js-escape",   label: "JS \\x Escape" },
+                    { id: "js-unescape", label: "JS \\x Unescape" },
                   ].map(({ id, label }) => (
                     <button
                       key={id}
@@ -3399,6 +3470,8 @@ export function GoogleDorksGenerator() {
                     </button>
                   ))}
                 </div>
+
+                {/* Result of a manual button click — appears right here, immediately, nothing else. */}
                 {encOutput && (
                   <div className="relative">
                     <pre className="p-4 bg-black/40 border border-white/10 rounded-xl text-sm font-mono text-emerald-300 break-all whitespace-pre-wrap max-h-48 overflow-y-auto pr-12">
@@ -3414,6 +3487,33 @@ export function GoogleDorksGenerator() {
                     </Button>
                   </div>
                 )}
+
+                {/* No sé qué encoding tiene esto — sección aparte, opcional, no interfiere con lo de arriba. */}
+                <div className="pt-3 border-t border-white/10 space-y-2">
+                  <p className="text-[11px] text-gray-500">¿No sabes qué codificación tiene el texto? Prueba a que la herramienta lo adivine:</p>
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={runAutoDecode}
+                      className="flex-1 flex items-center justify-center gap-2 px-3 py-2 text-xs font-semibold rounded-lg bg-gradient-to-r from-fuchsia-500/20 to-cyan-500/20 hover:from-fuchsia-500/30 hover:to-cyan-500/30 border border-fuchsia-500/30 hover:border-fuchsia-400/50 text-fuchsia-300 transition-all"
+                    >
+                      <Sparkles className="h-3.5 w-3.5" />✨ Auto Decode
+                    </button>
+                    <button
+                      onClick={() => setAutoAnalyze((v) => !v)}
+                      title="Si lo activas, analiza solo mientras escribes (300ms después de dejar de teclear). Desactivado, solo corre cuando pulsas Auto Decode."
+                      className={`flex-shrink-0 px-3 py-2 text-xs font-semibold rounded-lg border transition-all whitespace-nowrap ${
+                        autoAnalyze
+                          ? "bg-fuchsia-500/15 border-fuchsia-500/30 text-fuchsia-300"
+                          : "bg-white/5 border-white/10 text-gray-500"
+                      }`}
+                    >
+                      Auto analyze: {autoAnalyze ? "ON" : "OFF"}
+                    </button>
+                  </div>
+                  {autoDecodeResult && (
+                    <AutoDecodePanel result={autoDecodeResult} onOpenJwt={openJwtFromAutoDecode} onDecodeAgain={decodeAgain} />
+                  )}
+                </div>
               </CardContent>
             </Card>
 
@@ -3500,7 +3600,7 @@ export function GoogleDorksGenerator() {
                   </div>
                 </div>
                 <CardTitle className="text-white text-xl font-bold">Hash Identifier</CardTitle>
-                <p className="text-gray-400 text-sm">Identifica el tipo de hash: MD5, SHA-1/256/512, bcrypt, NTLM, JWT y más</p>
+                <p className="text-gray-400 text-sm">Identifica el tipo de hash: MD5, SHA-1/256/512, bcrypt, NTLM, JWT y más — y prueba a crackearlo por diccionario</p>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="flex gap-2">
@@ -3508,7 +3608,13 @@ export function GoogleDorksGenerator() {
                     type="text"
                     placeholder="Pega el hash aquí..."
                     value={hashInput}
-                    onChange={(e) => { setHashInput(e.target.value); setHashResults(identifyHash(e.target.value)) }}
+                    onChange={(e) => {
+                      setHashInput(e.target.value)
+                      setHashResults(identifyHash(e.target.value))
+                      setCrackState("idle")
+                      setCrackResult(null)
+                      setCrackMeta(null)
+                    }}
                     className="flex-1 px-4 py-3 bg-black/30 border border-white/10 rounded-xl text-sm font-mono text-white placeholder-gray-600 focus:outline-none focus:border-blue-400/50"
                   />
                 </div>
@@ -3522,73 +3628,50 @@ export function GoogleDorksGenerator() {
                     ))}
                   </div>
                 )}
+
+                {/* Hash Cracker — dictionary attack against MD4/MD5/SHA-1/256/384/512, 100% local */}
+                {hashInput.trim() && (
+                  <div className="pt-3 border-t border-white/10 space-y-2.5">
+                    <div className="flex items-center justify-between gap-3 flex-wrap">
+                      <p className="text-[11px] text-gray-500">
+                        Dictionary attack (MD4 / MD5 / SHA-1 / 256 / 384 / 512) — 100% local, sin conexión externa
+                      </p>
+                      <button
+                        onClick={runCrack}
+                        disabled={crackState === "cracking"}
+                        className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg bg-blue-500/10 hover:bg-blue-500/20 border border-blue-500/20 hover:border-blue-500/40 text-blue-300 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        <Key className="h-3.5 w-3.5" />
+                        {crackState === "cracking" ? "Crackeando..." : "Crack hash"}
+                      </button>
+                    </div>
+                    {crackState === "found" && crackResult && (
+                      <div className="flex items-center gap-2 px-3 py-2.5 bg-emerald-500/10 border border-emerald-500/25 rounded-lg">
+                        <Check className="h-4 w-4 text-emerald-400 flex-shrink-0" />
+                        <span className="text-sm text-emerald-300">
+                          Plaintext encontrado: <span className="font-mono font-bold text-emerald-200">{crackResult.plaintext}</span>
+                          <span className="text-emerald-400/70"> — {crackResult.algorithm} match</span>
+                        </span>
+                      </div>
+                    )}
+                    {crackState === "not-found" && crackMeta && crackMeta.algos.length > 0 && (
+                      <div className="flex items-center gap-2 px-3 py-2.5 bg-amber-500/10 border border-amber-500/25 rounded-lg">
+                        <AlertTriangle className="h-4 w-4 text-amber-400 flex-shrink-0" />
+                        <span className="text-sm text-amber-300">
+                          Sin coincidencia en la wordlist local ({crackMeta.attempts.toLocaleString()} intentos — {crackMeta.algos.join(" / ")})
+                        </span>
+                      </div>
+                    )}
+                    {crackState === "not-found" && crackMeta && crackMeta.algos.length === 0 && (
+                      <p className="text-[11px] text-gray-600">La longitud del hash no coincide con MD4/MD5/SHA-1/256/384/512 — no se intentó crackear.</p>
+                    )}
+                  </div>
+                )}
               </CardContent>
             </Card>
 
-            {/* JWT Builder */}
-            <Card className="bg-white/5 backdrop-blur-md border border-white/10">
-              <CardHeader className="pb-4">
-                <div className="flex items-center gap-3 mb-1">
-                  <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-violet-500/10 text-violet-400 border border-violet-500/20">
-                    <Key className="h-4 w-4" />
-                    <span className="text-xs font-semibold">JWT Builder</span>
-                  </div>
-                </div>
-                <CardTitle className="text-white text-xl font-bold">JWT Builder</CardTitle>
-                <p className="text-gray-400 text-sm">Construye tokens JWT custom: alg:none para bypass o HS256 con secreto</p>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex gap-2">
-                  {["none", "HS256"].map((alg) => (
-                    <button
-                      key={alg}
-                      onClick={() => {
-                        setJwtAlg(alg)
-                        setJwtHeader(alg === "none" ? '{"alg":"none","typ":"JWT"}' : '{"alg":"HS256","typ":"JWT"}')
-                      }}
-                      className={`px-4 py-2 text-xs font-semibold rounded-lg border transition-all ${
-                        jwtAlg === alg
-                          ? "bg-violet-500/20 border-violet-500/40 text-violet-300"
-                          : "bg-white/5 border-white/10 text-gray-400 hover:text-white"
-                      }`}
-                    >
-                      alg: {alg}
-                    </button>
-                  ))}
-                </div>
-                <div>
-                  <label className="block text-xs font-semibold text-gray-400 mb-1.5">Header (JSON)</label>
-                  <textarea rows={2} value={jwtHeader} onChange={(e) => setJwtHeader(e.target.value)}
-                    className="w-full p-3 bg-black/30 border border-white/10 rounded-xl text-xs font-mono text-white focus:outline-none focus:border-violet-400/50 resize-none" />
-                </div>
-                <div>
-                  <label className="block text-xs font-semibold text-gray-400 mb-1.5">Payload (JSON)</label>
-                  <textarea rows={3} value={jwtPayload} onChange={(e) => setJwtPayload(e.target.value)}
-                    className="w-full p-3 bg-black/30 border border-white/10 rounded-xl text-xs font-mono text-white focus:outline-none focus:border-violet-400/50 resize-none" />
-                </div>
-                {jwtAlg === "HS256" && (
-                  <div>
-                    <label className="block text-xs font-semibold text-gray-400 mb-1.5">Secret</label>
-                    <input type="text" placeholder="secretkey" value={jwtSecret} onChange={(e) => setJwtSecret(e.target.value)}
-                      className="w-full px-4 py-3 bg-black/30 border border-white/10 rounded-xl text-sm font-mono text-white placeholder-gray-600 focus:outline-none focus:border-violet-400/50" />
-                  </div>
-                )}
-                <button onClick={buildJWT}
-                  className="w-full py-3 bg-gradient-to-r from-violet-500 to-purple-600 hover:from-violet-600 hover:to-purple-700 text-white font-semibold rounded-xl transition-all text-sm">
-                  Generar JWT
-                </button>
-                {jwtOutput && (
-                  <div className="relative">
-                    <pre className="p-4 bg-black/40 border border-white/10 rounded-xl text-xs font-mono text-violet-300 break-all whitespace-pre-wrap pr-12 max-h-40 overflow-y-auto">
-                      {jwtOutput}
-                    </pre>
-                    <Button size="icon" variant="ghost" className="absolute top-3 right-3 h-8 w-8 hover:bg-white/20 rounded-lg" onClick={copyJWT}>
-                      {jwtCopied ? <Check className="h-4 w-4 text-green-400" /> : <Copy className="h-4 w-4 text-gray-400" />}
-                    </Button>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
+            {/* JWT Editor / Builder */}
+            <JwtEditor externalToken={jwtToLoad} />
 
             {/* Subdomain Wordlist Generator */}
             <Card className="bg-white/5 backdrop-blur-md border border-white/10">
@@ -3641,6 +3724,9 @@ export function GoogleDorksGenerator() {
                 )}
               </CardContent>
             </Card>
+
+            {/* Custom Encoding / Transformation Chain */}
+            <TransformationChain />
 
           </div>
         )}
@@ -3707,7 +3793,7 @@ export function GoogleDorksGenerator() {
                           size="icon"
                           variant="ghost"
                           className="h-7 w-7 flex-shrink-0 hover:bg-white/20 rounded-lg"
-                          onClick={() => copyToClipboard(injectUrl(entry.payload), key)}
+                          onClick={() => copyDork(injectUrl(entry.payload), key)}
                         >
                           {isCopied ? <Check className="h-3.5 w-3.5 text-green-400" /> : <Copy className="h-3.5 w-3.5 text-gray-400" />}
                         </Button>
